@@ -4,32 +4,33 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.example.tutoria1.Model.Documento;
-import com.example.tutoria1.Model.enums.Documento_Estado;
-import com.example.tutoria1.Model.enums.Documento_TipoVehiculo;
-import com.example.tutoria1.Service.repository.Documento_repository;
+import com.example.tutoria1.Enums.Documento.Estado;
+import com.example.tutoria1.Enums.Documento.TipoVehiculo;
+import com.example.tutoria1.Model.DocumentoModel;
+import com.example.tutoria1.Service.interfaces.IDocumentoService;
+import com.example.tutoria1.repository.DocumentoRepository;
 
 @Service 
-public class Documento_serviceImpl extends Documento_service {
+public class DocumentoService implements IDocumentoService {
     
-    private final Documento_repository documentoRepository;
+    private final DocumentoRepository documentoRepository;
 
-    public Documento_serviceImpl(Documento_repository documentoRepository) {
+    public DocumentoService(DocumentoRepository documentoRepository) {
         this.documentoRepository = documentoRepository;
     }
 
-    public Documento crearDocumento(Documento documento) {
-        Documento documentoCreado = documentoRepository.save(documento);
+    public DocumentoModel crearDocumento(DocumentoModel documento) {
+        DocumentoModel documentoCreado = documentoRepository.save(documento);
         return documentoCreado;
     }
 
-    public Documento obtenerDocumentoPorId(Long id) {
-        Documento documentoEncontrado = documentoRepository.findById(id).orElse(null);
+    public DocumentoModel obtenerDocumentoPorId(Long id) {
+        DocumentoModel documentoEncontrado = documentoRepository.findById(id).orElse(null);
         return documentoEncontrado;
     }
 
-    public Documento actualizarDocumento(Long id, Documento documento) {
-        Documento documentoExistente = documentoRepository.findById(id).orElse(null);
+    public DocumentoModel actualizarDocumento(Long id, DocumentoModel documento) {
+        DocumentoModel documentoExistente = documentoRepository.findById(id).orElse(null);
         if (documentoExistente != null) {
             documentoExistente.setCodigoDocumentoParametrizado(documento.getCodigoDocumentoParametrizado());
             documentoExistente.setNombreDocumento(documento.getNombreDocumento());
@@ -47,22 +48,22 @@ public class Documento_serviceImpl extends Documento_service {
         // Lógica para eliminar un documento
     }
 
-    public List<Documento> listarDocumentos() {
+    public List<DocumentoModel> listarDocumentos() {
         // Lógica para listar todos los documentos
         return null;
     }
 
-    public List<Documento> listarDocumentosPorTipoVehiculo(Documento_TipoVehiculo tipoVehiculo) {
+    public List<DocumentoModel> listarDocumentosPorTipoVehiculo(TipoVehiculo tipoVehiculo) {
         // Lógica para listar documentos por tipo de vehículo
         return null;
     }
 
-    public List<Documento> listarDocumentosPorEstado(Documento_Estado estado) {
+    public List<DocumentoModel> listarDocumentosPorEstado(Estado estado) {
         // Lógica para listar documentos por estado
         return null;
     }
 
-    public List<Documento> listarDocumentosPorPlaca(String placa) {
+    public List<DocumentoModel> listarDocumentosPorPlaca(String placa) {
         // Lógica para listar documentos por placa
         return null;
     }

@@ -1,8 +1,8 @@
 package com.example.tutoria1.Model;
 
-import com.example.tutoria1.Model.enums.Documento_Estado;
-import com.example.tutoria1.Model.enums.Documento_RequisitoSegunVehiculo;
-import com.example.tutoria1.Model.enums.Documento_TipoVehiculo;
+import com.example.tutoria1.Enums.Documento.Estado;
+import com.example.tutoria1.Enums.Documento.RequisitoSegunVehiculo;
+import com.example.tutoria1.Enums.Documento.TipoVehiculo;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -15,7 +15,7 @@ import lombok.Setter;
 @Setter 
 @Entity 
 @Table (name = "documentos")
-public class Documento {
+public class DocumentoModel {
     
     @Id
     private Long id;
@@ -30,19 +30,19 @@ public class Documento {
      * M - motocicleta
      * AM - ambos */
     @Column (name = "tipo_vehiculo_al_que_aplica", nullable = false)
-    private Documento_TipoVehiculo tipoVehiculoAlQueAplica;
+    private TipoVehiculo tipoVehiculoAlQueAplica;
 
     /* RA - obligatorio para automovil
      * RM - obligatorio para motocicleta
      * RR - obligatorio para ambos */
     @Column (name = "requisito_segun_tipo_vehiculo", nullable = false)
-    private Documento_RequisitoSegunVehiculo requisitoSegunTipoVehiculo;
+    private RequisitoSegunVehiculo requisitoSegunTipoVehiculo;
 
     @Column (name = "descripcion", nullable = false)
     private String descripcion;
 
     @Column (name = "estado", nullable = false)
-    private Documento_Estado estado;
+    private Estado estado;
 
     /* Espacio para el ManyToOne de la relación con vehiculos */
 }
