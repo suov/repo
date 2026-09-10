@@ -45,26 +45,26 @@ public class DocumentoService implements IDocumentoService {
     }
 
     public void eliminarDocumento(Long id) {
-        // Lógica para eliminar un documento
+        documentoRepository.deleteById(id);
     }
 
     public List<DocumentoModel> listarDocumentos() {
-        // Lógica para listar todos los documentos
-        return null;
+        List<DocumentoModel> documentos = documentoRepository.findAll();
+        return documentos;
     }
 
     public List<DocumentoModel> listarDocumentosPorTipoVehiculo(TipoVehiculo tipoVehiculo) {
-        // Lógica para listar documentos por tipo de vehículo
-        return null;
+        List<DocumentoModel> documentos = documentoRepository.findByTipoVehiculoAlQueAplica(tipoVehiculo);
+        return documentos;
     }
 
     public List<DocumentoModel> listarDocumentosPorEstado(Estado estado) {
-        // Lógica para listar documentos por estado
-        return null;
+        List<DocumentoModel> documentos = documentoRepository.findByEstado(estado);
+        return documentos;
     }
 
     public List<DocumentoModel> listarDocumentosPorPlaca(String placa) {
-        // Lógica para listar documentos por placa
-        return null;
+        List<DocumentoModel> documentos = documentoRepository.findByPlaca(placa);
+        return documentos;
     }
 }
