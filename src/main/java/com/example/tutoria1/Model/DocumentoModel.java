@@ -1,6 +1,5 @@
 package com.example.tutoria1.Model;
 
-import com.example.tutoria1.Enums.Documento.Estado;
 import com.example.tutoria1.Enums.Documento.RequisitoSegunVehiculo;
 import com.example.tutoria1.Enums.Documento.TipoVehiculo;
 
@@ -40,9 +39,4 @@ public class DocumentoModel {
 
     @Column (name = "descripcion", nullable = false)
     private String descripcion;
-
-    @Column (name = "estado", nullable = false)
-    private Estado estado;
-
-    /* Espacio para el ManyToOne de la relación con vehiculos */
 }

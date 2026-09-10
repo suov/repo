@@ -1,6 +1,5 @@
 package com.example.tutoria1.Service.interfaces;
 
-import com.example.tutoria1.Enums.Documento.Estado;
 import com.example.tutoria1.Enums.Documento.TipoVehiculo;
 import com.example.tutoria1.Model.DocumentoModel;
 
@@ -25,10 +24,4 @@ public interface IDocumentoService {
 
     /* Listar documentos por tipo de vehículo */
     List<DocumentoModel> listarDocumentosPorTipoVehiculo(TipoVehiculo tipoVehiculo);
-
-    /* Listar documentos por estado */
-    List<DocumentoModel> listarDocumentosPorEstado(Estado estado);
-
-    /* Listar documentos por placa */
-    List<DocumentoModel> listarDocumentosPorPlaca(String placa);
 }

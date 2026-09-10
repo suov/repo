@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.example.tutoria1.Enums.Documento.Estado;
 import com.example.tutoria1.Enums.Documento.TipoVehiculo;
 import com.example.tutoria1.Model.DocumentoModel;
 import com.example.tutoria1.Service.interfaces.IDocumentoService;
@@ -37,7 +36,6 @@ public class DocumentoService implements IDocumentoService {
             documentoExistente.setTipoVehiculoAlQueAplica(documento.getTipoVehiculoAlQueAplica());
             documentoExistente.setRequisitoSegunTipoVehiculo(documento.getRequisitoSegunTipoVehiculo());
             documentoExistente.setDescripcion(documento.getDescripcion());
-            documentoExistente.setEstado(documento.getEstado());
             documentoRepository.save(documentoExistente);
             return documentoExistente;
         }
@@ -55,16 +53,6 @@ public class DocumentoService implements IDocumentoService {
 
     public List<DocumentoModel> listarDocumentosPorTipoVehiculo(TipoVehiculo tipoVehiculo) {
         List<DocumentoModel> documentos = documentoRepository.findByTipoVehiculoAlQueAplica(tipoVehiculo);
-        return documentos;
-    }
-
-    public List<DocumentoModel> listarDocumentosPorEstado(Estado estado) {
-        List<DocumentoModel> documentos = documentoRepository.findByEstado(estado);
-        return documentos;
-    }
-
-    public List<DocumentoModel> listarDocumentosPorPlaca(String placa) {
-        List<DocumentoModel> documentos = documentoRepository.findByPlaca(placa);
         return documentos;
     }
 }
