@@ -5,6 +5,7 @@ import java.util.List;
 import com.example.tutoria1.Enums.Vehiculo.TipoCombustible;
 import com.example.tutoria1.Enums.Vehiculo.TipoServicio;
 import com.example.tutoria1.Enums.Vehiculo.TipoVehiculo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CheckConstraint;
 import jakarta.persistence.Column;
@@ -71,6 +72,7 @@ public class VehiculoModel {
         @Column(name = "linea", nullable = false)
         private String linea;
 
+        @JsonIgnore
         @OneToMany(mappedBy = "vehiculo")
         private List<VehiculoDocumentoModel> documentos;
 }

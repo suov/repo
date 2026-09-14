@@ -4,12 +4,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.example.tutoria1.Model.DocumentoModel;
 import com.example.tutoria1.Model.VehiculoDocumentoModel;
-import com.example.tutoria1.Model.VehiculoModel;
-import com.example.tutoria1.Service.interfaces.IDocumentoService;
 import com.example.tutoria1.Service.interfaces.IVehiculoDocumentoService;
-import com.example.tutoria1.repository.DocumentoRepository;
 import com.example.tutoria1.repository.VehiculoDocumentoRepository;
 
 @Service
