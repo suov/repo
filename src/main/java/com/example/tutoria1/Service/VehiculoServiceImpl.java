@@ -2,6 +2,7 @@ package com.example.tutoria1.Service;
 
 import com.example.tutoria1.Enums.Vehiculo.TipoVehiculo;
 import com.example.tutoria1.Model.VehiculoModel;
+import com.example.tutoria1.Service.interfaces.VehiculoService;
 import com.example.tutoria1.repository.VehiculoRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
