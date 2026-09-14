@@ -1,7 +1,8 @@
 package com.example.tutoria1.Controller;
 
 import com.example.tutoria1.Model.VehiculoModel;
-import com.example.tutoria1.Service.VehiculoService;
+import com.example.tutoria1.Service.interfaces.VehiculoService;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
