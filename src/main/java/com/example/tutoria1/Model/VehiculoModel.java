@@ -31,7 +31,7 @@ import jakarta.persistence.EnumType;
                 @CheckConstraint(name = "chk_tipo_vehiculo", constraint = "tipo_vehiculo IN ('AUTOMOVIL', 'MOTOCICLETA')"),
                 @CheckConstraint(name = "chk_placa", constraint = "(tipo_vehiculo = 'AUTOMOVIL' AND placa REGEXP '^[A-Za-z]{3}[0-9]{3}$')"
                                 +
-                                "OR (tipo_vehiculo = 'MOTO' AND placa REGEXP '^[A-Za-z]{3}[0-9]{2}[A-Za-z]$')"),
+                                "OR (tipo_vehiculo = 'MOTOCICLETA' AND placa REGEXP '^[A-Za-z]{3}[0-9]{2}[A-Za-z]$')"),
                 @CheckConstraint(name = "chk_cap_pasajeros", constraint = "(capacidad_pasajeros >= 0)"),
                 @CheckConstraint(name = "chk_modelo", constraint = "(modelo >= 0)")
 })
