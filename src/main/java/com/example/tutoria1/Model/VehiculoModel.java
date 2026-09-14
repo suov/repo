@@ -21,17 +21,17 @@ import lombok.Setter;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.EnumType;
 
-@Entity
 @Setter
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Entity
 @Table(name = "vehiculos", check = {
                 /* Condiciones de los atributos de vehiculo */
-                @CheckConstraint(name = "chk_tipo_vehiculo", constraint = "tipo_vehiculo IN ('AUTOMOVIL', 'MOTO')"),
+                @CheckConstraint(name = "chk_tipo_vehiculo", constraint = "tipo_vehiculo IN ('AUTOMOVIL', 'MOTOCICLETA')"),
                 @CheckConstraint(name = "chk_placa", constraint = "(tipo_vehiculo = 'AUTOMOVIL' AND placa REGEXP '^[A-Za-z]{3}[0-9]{3}$')"
                                 +
-                                "OR (tipo_vehiculo = 'MOTO' AND placa REGEXP '^[A-Za-z]{3}[0-9]{2}[A-Za-z]$'))"),
+                                "OR (tipo_vehiculo = 'MOTO' AND placa REGEXP '^[A-Za-z]{3}[0-9]{2}[A-Za-z]$')"),
                 @CheckConstraint(name = "chk_cap_pasajeros", constraint = "(capacidad_pasajeros >= 0)"),
                 @CheckConstraint(name = "chk_modelo", constraint = "(modelo >= 0)")
 })
@@ -62,7 +62,7 @@ public class VehiculoModel {
         @Column(name = "color", nullable = false)
         private String colorHexadecimal;
 
-        @Column(name = "medelo", nullable = false)
+        @Column(name = "modelo", nullable = false)
         private Integer modelo;
 
         @Column(name = "marca", nullable = false)

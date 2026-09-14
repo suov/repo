@@ -1,11 +1,14 @@
 package com.example.tutoria1.Model;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
+
+import com.example.tutoria1.Enums.VehiculoDocumento.VehiculoDocumentoStatus;
 
 import jakarta.persistence.CheckConstraint;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -17,13 +20,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Entity
 @Table(name = "vehiculo_documento", check = {
-        @CheckConstraint(name = "chk_estado_documento", constraint = "(estado_documento IN ('HABILITADO', 'VENCIDO', 'EN VERIFICACION'))")
+        @CheckConstraint(name = "chk_estado_documento", constraint = "(estado_documento IN ('HABILITADO', 'VENCIDO', 'EN_VERIFICACION'))")
 })
 public class VehiculoDocumentoModel {
 
@@ -44,5 +47,9 @@ public class VehiculoDocumentoModel {
 
     @Column(name = "fecha_vencimiento", nullable = false)
     private LocalDate fechaVencimiento;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "estado_documento", nullable = false)
+    private VehiculoDocumentoStatus estadoDocumento;
 
 }

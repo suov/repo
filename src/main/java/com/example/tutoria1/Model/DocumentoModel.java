@@ -8,6 +8,8 @@ import com.example.tutoria1.Enums.Documento.TipoVehiculo;
 import jakarta.persistence.CheckConstraint;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -20,13 +22,13 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@Entity
 @NoArgsConstructor
 @AllArgsConstructor
+@Entity
 @Table(name = "documentos", check = {
         /* Condiciones de los atributos de documento */
-        @CheckConstraint(name = "chk_tipo_vehiculo_al_que_aplica", constraint = "tipo_vehiculo_al_que_aplica IN IN ('A', 'M', 'AM')"),
-        @CheckConstraint(name = "chk_requisito_segun_tipo_vehiculo", constraint = "requisito_segun_tipo_vehiculo IN IN ('RA', 'RM', 'RR')")
+        @CheckConstraint(name = "chk_tipo_vehiculo_al_que_aplica", constraint = "tipo_vehiculo_al_que_aplica IN ('A', 'M', 'AM')"),
+        @CheckConstraint(name = "chk_requisito_segun_tipo_vehiculo", constraint = "requisito_segun_tipo_vehiculo IN ('RA', 'RM', 'RR')")
 })
 public class DocumentoModel {
 
@@ -45,6 +47,7 @@ public class DocumentoModel {
      * M - motocicleta
      * AM - ambos
      */
+    @Enumerated(EnumType.STRING)
     @Column(name = "tipo_vehiculo_al_que_aplica", nullable = false)
     private TipoVehiculo tipoVehiculoAlQueAplica;
 
@@ -53,12 +56,13 @@ public class DocumentoModel {
      * RM - obligatorio para motocicleta
      * RR - obligatorio para ambos
      */
+    @Enumerated(EnumType.STRING)
     @Column(name = "requisito_segun_tipo_vehiculo", nullable = false)
     private RequisitoSegunVehiculo requisitoSegunTipoVehiculo;
 
     @Column(name = "descripcion", nullable = false)
     private String descripcion;
 
-    @OneToMany(mappedBy = "vehiculo")
+    @OneToMany(mappedBy = "documento")
     private List<VehiculoDocumentoModel> vehiculos;
 }
