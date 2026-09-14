@@ -1,4 +1,4 @@
-package com.example.tutoria1.Service;
+package com.example.tutoria1.Service.interfaces;
 
 import java.util.List;
 

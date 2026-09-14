@@ -9,9 +9,9 @@ import com.example.tutoria1.Model.DocumentoModel;
 import com.example.tutoria1.Service.interfaces.IDocumentoService;
 import com.example.tutoria1.repository.DocumentoRepository;
 
-@Service 
+@Service
 public class DocumentoService implements IDocumentoService {
-    
+
     private final DocumentoRepository documentoRepository;
 
     public DocumentoService(DocumentoRepository documentoRepository) {
