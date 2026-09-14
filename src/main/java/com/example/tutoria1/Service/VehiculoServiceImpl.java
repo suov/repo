@@ -40,12 +40,12 @@ public class VehiculoServiceImpl implements VehiculoService {
         boolean placaAutomovil = placa.matches("^[A-Z]{3}[0-9]{3}$");
         boolean placaMotocicleta = placa.matches("^[A-Z]{3}[0-9]{2}[A-Z]$");
 
-        if (vehiculo.getTipo() == TipoVehiculo.AUTOMOVIL && !placaAutomovil) {
+        if (vehiculo.getTipoVehiculo() == TipoVehiculo.AUTOMOVIL && !placaAutomovil) {
             throw new IllegalArgumentException(
                     "La placa de automóvil debe tener formato ABC123");
         }
 
-        if (vehiculo.getTipo() == TipoVehiculo.MOTOCICLETA && !placaMotocicleta) {
+        if (vehiculo.getTipoVehiculo() == TipoVehiculo.MOTOCICLETA && !placaMotocicleta) {
             throw new IllegalArgumentException(
                     "La placa de motocicleta debe tener formato ABC12D");
         }
@@ -83,7 +83,7 @@ public class VehiculoServiceImpl implements VehiculoService {
             throw new IllegalArgumentException("La placa ya está registrada");
         }
 
-        vehiculoExistente.setTipo(vehiculo.getTipo());
+        vehiculoExistente.setTipoVehiculo(vehiculo.getTipoVehiculo());
         vehiculoExistente.setTipoServicio(vehiculo.getTipoServicio());
         vehiculoExistente.setTipoCombustible(vehiculo.getTipoCombustible());
         vehiculoExistente.setPlaca(vehiculo.getPlaca());
