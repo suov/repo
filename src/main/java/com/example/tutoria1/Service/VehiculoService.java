@@ -1,17 +1,18 @@
 package com.example.tutoria1.Service;
 
-import com.example.tutoria1.Model.Vehiculo.Vehiculo;
 import java.util.List;
+
+import com.example.tutoria1.Model.VehiculoModel;
 
 public interface VehiculoService {
 
-    Vehiculo crearVehiculo(Vehiculo vehiculo);
+    VehiculoModel crearVehiculo(VehiculoModel vehiculo);
 
-    List<Vehiculo> listarVehiculos();
+    List<VehiculoModel> listarVehiculos();
 
-    Vehiculo obtenerVehiculoPorId(Long id);
+    VehiculoModel obtenerVehiculoPorId(Long id);
 
-    Vehiculo actualizarVehiculo(Long id, Vehiculo vehiculo);    
+    VehiculoModel actualizarVehiculo(Long id, VehiculoModel vehiculo);
 
     void eliminarVehiculo(Long id);
 }
