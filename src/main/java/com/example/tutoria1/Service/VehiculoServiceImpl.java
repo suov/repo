@@ -165,6 +165,7 @@ public class VehiculoServiceImpl implements VehiculoService {
 
     @Override
     public List<VehiculoModel> consultarVehiculosPorTipoDocumento(String codigoDocumento) {
+
         if (codigoDocumento == null || codigoDocumento.isBlank()) {
             return List.of();
         }
@@ -178,6 +179,8 @@ public class VehiculoServiceImpl implements VehiculoService {
             VehiculoDocumentoModel vehiculoDocumento) {
 
         VehiculoModel vehiculo = obtenerVehiculoPorId(vehiculoId);
+
+        /* Validaciones ------------------------------------------ */
         if (vehiculoDocumento == null
                 || vehiculoDocumento.getDocumento() == null
                 || vehiculoDocumento.getDocumento().getId() == null) {
@@ -195,6 +198,7 @@ public class VehiculoServiceImpl implements VehiculoService {
             throw new IllegalArgumentException("Las fechas del documento son obligatorias");
         }
 
+        /* ------------------------------------------------------- */
         vehiculoDocumento.setVehiculo(vehiculo);
         vehiculoDocumento.setDocumento(documento);
         vehiculoDocumento.setEstadoDocumento(VehiculoDocumentoStatus.EN_VERIFICACION);
