@@ -72,10 +72,6 @@ public class VehiculoModel {
         @Column(name = "linea", nullable = false)
         private String linea;
 
-        @OneToMany(
-                mappedBy = "vehiculo",
-                cascade = CascadeType.ALL,
-                orphanRemoval = true
-        )
+        @OneToMany(mappedBy = "vehiculo", cascade = CascadeType.ALL, orphanRemoval = true)
         private List<VehiculoDocumentoModel> documentos;
 }
