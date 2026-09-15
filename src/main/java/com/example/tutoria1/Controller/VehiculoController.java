@@ -44,7 +44,9 @@ public class VehiculoController {
                 .collect(Collectors.toList());
     }
 
-    @GetMapping("/placa/{placa}")
+    /* Filtros de busqueda ---------------- */
+
+    @GetMapping("/{placa}")
     public ResponseEntity<VehiculoResponseDto> buscarVehiculoPorPlaca(@PathVariable String placa) {
 
         Optional<VehiculoModel> vehiculo = vehiculoService.consultarVehiculoPorPlaca(placa);
@@ -54,15 +56,36 @@ public class VehiculoController {
         return ResponseEntity.notFound().build();
     }
 
-    @GetMapping("/tipoVehiculo/{tipoVehiculo}")
-    public ResponseEntity<VehiculoResponseDto> buscarVehiculoPorTipoVehiculo(@PathVariable String tipoVehiculo) {
-
-        Optional<VehiculoModel> vehiculo = vehiculoService.consultarVehiculoPorTipVehiculo(tipoVehiculo);
-        if (vehiculo.isPresent()) {
-            return ResponseEntity.ok(convertirAResponse(vehiculo.get()));
-        }
-        return ResponseEntity.notFound().build();
+    @GetMapping("/{tipoVehiculo}")
+    public List<VehiculoResponseDto> buscarVehiculosPorTipoVehiculo(@PathVariable String tipoVehiculo) {
+        return vehiculoService.consultarVehiculosPorTipoVehiculo(tipoVehiculo).stream()
+                .map(this::convertirAResponse)
+                .collect(Collectors.toList());
     }
+
+    @GetMapping("/tipoDocumento/{codigoDocumento}")
+    public List<VehiculoResponseDto> buscarVehiculosPorTipoDocumento(
+            @PathVariable String codigoDocumento) {
+        return vehiculoService.consultarVehiculosPorTipoDocumento(codigoDocumento).stream()
+                .map(this::convertirAResponse)
+                .collect(Collectors.toList());
+    }
+
+    @PostMapping("/{vehiculoId}/documentos")
+    public ResponseEntity<VehiculoDocumentoResponseDto> agregarDocumento(
+            @PathVariable Long vehiculoId,
+            @RequestBody VehiculoDocumentoRequestDto documentoRequest) {
+
+        VehiculoDocumentoModel documento = vehiculoService.agregarDocumento(
+                vehiculoId,
+                convertirDocumentoAModelo(documentoRequest));
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(convertirDocumentoAResponse(documento));
+    }
+
+    /* ----------------------- */
 
     @GetMapping("/{id}")
     public VehiculoResponseDto obtenerVehiculoPorId(@PathVariable Long id) {

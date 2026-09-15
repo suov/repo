@@ -8,6 +8,7 @@ import com.example.tutoria1.Model.VehiculoModel;
 import com.example.tutoria1.Service.interfaces.VehiculoService;
 import com.example.tutoria1.repository.DocumentoRepository;
 import com.example.tutoria1.repository.VehiculoRepository;
+import com.example.tutoria1.repository.VehiculoDocumentoRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
@@ -20,13 +21,16 @@ public class VehiculoServiceImpl implements VehiculoService {
 
     private final DocumentoRepository documentoRepository;
     private final VehiculoRepository vehiculoRepository;
+    private final VehiculoDocumentoRepository vehiculoDocumentoRepository;
 
     public VehiculoServiceImpl(
         VehiculoRepository vehiculoRepository,
-        DocumentoRepository documentoRepository
+        DocumentoRepository documentoRepository,
+        VehiculoDocumentoRepository vehiculoDocumentoRepository
     ) {
         this.vehiculoRepository = vehiculoRepository;
         this.documentoRepository = documentoRepository;
+        this.vehiculoDocumentoRepository = vehiculoDocumentoRepository;
     }
 
     @Override
@@ -138,20 +142,63 @@ public class VehiculoServiceImpl implements VehiculoService {
         vehiculoRepository.delete(vehiculo);
     }
 
+    /* Consultas tipo filtro ------------------------------------- */
     @Override
     public Optional<VehiculoModel> consultarVehiculoPorPlaca(String placa) {
-        return vehiculoRepository.findByPlaca(placa);
+
+        if (placa == null) {
+            return Optional.empty();
+        }
+        return vehiculoRepository.findByPlaca(placa.trim().toUpperCase());
     }
 
     @Override
-    public Optional<VehiculoModel> consultarVehiculoPorTipVehiculo(String tipoVehiculo) {
-        
+    public List<VehiculoModel> consultarVehiculosPorTipoVehiculo(String tipoVehiculo) {
+
         try {
             TipoVehiculo tipo = TipoVehiculo.valueOf(tipoVehiculo.trim().toUpperCase());
             return vehiculoRepository.findByTipoVehiculo(tipo);
         } catch (IllegalArgumentException exception) {
-            return Optional.empty();
+            return List.of();
         }
+    }
+
+    @Override
+    public List<VehiculoModel> consultarVehiculosPorTipoDocumento(String codigoDocumento) {
+        if (codigoDocumento == null || codigoDocumento.isBlank()) {
+            return List.of();
+        }
+        return vehiculoRepository.findDistinctByDocumentosDocumentoCodigoDocumentoParametrizado(
+                codigoDocumento.trim());
+    }
+
+    @Override
+    public VehiculoDocumentoModel agregarDocumento(
+            Long vehiculoId,
+            VehiculoDocumentoModel vehiculoDocumento) {
+
+        VehiculoModel vehiculo = obtenerVehiculoPorId(vehiculoId);
+        if (vehiculoDocumento == null
+                || vehiculoDocumento.getDocumento() == null
+                || vehiculoDocumento.getDocumento().getId() == null) {
+            throw new IllegalArgumentException("El documento asociado es obligatorio");
+        }
+
+        DocumentoModel documento = documentoRepository.findById(
+                vehiculoDocumento.getDocumento().getId())
+                .orElseThrow(() -> new IllegalArgumentException("El documento no existe"));
+
+        if (vehiculoDocumento.getFechaExpedicion() == null
+            || vehiculoDocumento.getFechaVencimiento() == null
+            || vehiculoDocumento.getFechaVencimiento()
+                .isBefore(vehiculoDocumento.getFechaExpedicion())) {
+            throw new IllegalArgumentException("Las fechas del documento son obligatorias");
+        }
+
+        vehiculoDocumento.setVehiculo(vehiculo);
+        vehiculoDocumento.setDocumento(documento);
+        vehiculoDocumento.setEstadoDocumento(VehiculoDocumentoStatus.EN_VERIFICACION);
+        return vehiculoDocumentoRepository.save(vehiculoDocumento);
     }
 
 }
