@@ -1,13 +1,21 @@
 package com.example.tutoria1.Controller;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import com.example.tutoria1.Dto.VehiculoDocumento.Request.VehiculoDocumentoRequestDto;
+import com.example.tutoria1.Dto.Vehiculo.Request.VehiculoRequestDto;
+import com.example.tutoria1.Dto.VehiculoDocumento.Response.VehiculoDocumentoResponseDto;
+import com.example.tutoria1.Dto.Vehiculo.Response.VehiculoResponseDto;
+import com.example.tutoria1.Model.DocumentoModel;
+import com.example.tutoria1.Model.VehiculoDocumentoModel;
 import com.example.tutoria1.Model.VehiculoModel;
 import com.example.tutoria1.Service.interfaces.VehiculoService;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/vehiculos")
@@ -19,62 +27,127 @@ public class VehiculoController {
         this.vehiculoService = vehiculoService;
     }
 
-    /* POST */
     @PostMapping
-    public ResponseEntity<VehiculoModel> crearVehiculo(
-            @RequestBody VehiculoModel vehiculo) {
+    public ResponseEntity<VehiculoResponseDto> crearVehiculo(@RequestBody VehiculoRequestDto vehiculoRequest) {
 
-        VehiculoModel vehiculoCreado = vehiculoService.crearVehiculo(vehiculo);
+        VehiculoModel vehiculoCreado = vehiculoService.crearVehiculo(convertirAModelo(vehiculoRequest));
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(vehiculoCreado);
+                .body(convertirAResponse(vehiculoCreado));
     }
 
-    /* GET */
     @GetMapping
-    public List<VehiculoModel> listarVehiculos() {
-        return vehiculoService.listarVehiculos();
+    public List<VehiculoResponseDto> listarVehiculos() {
+        return vehiculoService.listarVehiculos().stream()
+                .map(this::convertirAResponse)
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/placa/{placa}")
-    public ResponseEntity<VehiculoModel> buscarVehiculoPorPlaca(@PathVariable String placa) {
+    public ResponseEntity<VehiculoResponseDto> buscarVehiculoPorPlaca(@PathVariable String placa) {
+
         Optional<VehiculoModel> vehiculo = vehiculoService.consultarVehiculoPorPlaca(placa);
         if (vehiculo.isPresent()) {
-            return ResponseEntity.ok(vehiculo.get());
+            return ResponseEntity.ok(convertirAResponse(vehiculo.get()));
         }
         return ResponseEntity.notFound().build();
     }
 
     @GetMapping("/tipoVehiculo/{tipoVehiculo}")
-    public ResponseEntity<VehiculoModel> buscarVehiculoPorTipoVehiculo(@PathVariable String tipoVehiculo) {
+    public ResponseEntity<VehiculoResponseDto> buscarVehiculoPorTipoVehiculo(@PathVariable String tipoVehiculo) {
+
         Optional<VehiculoModel> vehiculo = vehiculoService.consultarVehiculoPorTipVehiculo(tipoVehiculo);
         if (vehiculo.isPresent()) {
-            return ResponseEntity.ok(vehiculo.get());
+            return ResponseEntity.ok(convertirAResponse(vehiculo.get()));
         }
         return ResponseEntity.notFound().build();
     }
 
     @GetMapping("/{id}")
-    public VehiculoModel obtenerVehiculoPorId(@PathVariable Long id) {
-        return vehiculoService.obtenerVehiculoPorId(id);
+    public VehiculoResponseDto obtenerVehiculoPorId(@PathVariable Long id) {
+        return convertirAResponse(vehiculoService.obtenerVehiculoPorId(id));
     }
 
-    /* PUT */
     @PutMapping("/{id}")
-    public VehiculoModel actualizarVehiculo(
+    public VehiculoResponseDto actualizarVehiculo(
             @PathVariable Long id,
-            @RequestBody VehiculoModel vehiculo) {
+            @RequestBody VehiculoRequestDto vehiculoRequest) {
 
-        return vehiculoService.actualizarVehiculo(id, vehiculo);
+        return convertirAResponse(
+                vehiculoService.actualizarVehiculo(id, convertirAModelo(vehiculoRequest)));
     }
 
-    /* DELETE */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarVehiculo(@PathVariable Long id) {
 
         vehiculoService.eliminarVehiculo(id);
-
         return ResponseEntity.noContent().build();
+    }
+
+/* -----------------------------DTOS------------------------------------- */
+
+    private VehiculoModel convertirAModelo(VehiculoRequestDto dto) {
+        VehiculoModel vehiculo = new VehiculoModel();
+        vehiculo.setTipoVehiculo(dto.getTipoVehiculo());
+        vehiculo.setTipoServicio(dto.getTipoServicio());
+        vehiculo.setTipoCombustible(dto.getTipoCombustible());
+        vehiculo.setPlaca(dto.getPlaca());
+        vehiculo.setCapacidadPasajeros(dto.getCapacidadPasajeros());
+        vehiculo.setColorHexadecimal(dto.getColorHexadecimal());
+        vehiculo.setModelo(dto.getModelo());
+        vehiculo.setMarca(dto.getMarca());
+        vehiculo.setLinea(dto.getLinea());
+
+        /* Solo si tiene documentos entramos a recorrer el arreglo */
+        if (dto.getDocumentos() != null) {
+            vehiculo.setDocumentos(dto.getDocumentos().stream()
+                    .map(this::convertirDocumentoAModelo)
+                    .collect(Collectors.toList()));
+        }
+
+        return vehiculo;
+    }
+
+    private VehiculoDocumentoModel convertirDocumentoAModelo(VehiculoDocumentoRequestDto dto) {
+
+        DocumentoModel documento = new DocumentoModel();
+        documento.setId(dto.getDocumentoId());
+
+        VehiculoDocumentoModel vehiculoDocumento = new VehiculoDocumentoModel();
+        vehiculoDocumento.setDocumento(documento);
+        vehiculoDocumento.setFechaExpedicion(dto.getFechaExpedicion());
+        vehiculoDocumento.setFechaVencimiento(dto.getFechaVencimiento());
+        return vehiculoDocumento;
+    }
+
+    private VehiculoResponseDto convertirAResponse(VehiculoModel modelo) {
+
+        VehiculoResponseDto dto = new VehiculoResponseDto();
+        dto.setId(modelo.getId());
+        dto.setTipoVehiculo(modelo.getTipoVehiculo());
+        dto.setTipoServicio(modelo.getTipoServicio());
+        dto.setTipoCombustible(modelo.getTipoCombustible());
+        dto.setPlaca(modelo.getPlaca());
+        dto.setCapacidadPasajeros(modelo.getCapacidadPasajeros());
+        dto.setColorHexadecimal(modelo.getColorHexadecimal());
+        dto.setModelo(modelo.getModelo());
+        dto.setMarca(modelo.getMarca());
+        dto.setLinea(modelo.getLinea());
+        dto.setDocumentos(modelo.getDocumentos().stream()
+                .map(this::convertirDocumentoAResponse)
+                .collect(Collectors.toList()));
+        return dto;
+    }
+
+    private VehiculoDocumentoResponseDto convertirDocumentoAResponse(VehiculoDocumentoModel modelo) {
+        
+        VehiculoDocumentoResponseDto dto = new VehiculoDocumentoResponseDto();
+        dto.setId(modelo.getId());
+        dto.setDocumentoId(modelo.getDocumento().getId());
+        dto.setFechaExpedicion(modelo.getFechaExpedicion());
+        dto.setFechaVencimiento(modelo.getFechaVencimiento());
+        dto.setEstadoDocumento(modelo.getEstadoDocumento());
+        return dto;
     }
 }

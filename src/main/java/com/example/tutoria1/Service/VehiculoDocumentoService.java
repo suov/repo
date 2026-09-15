@@ -19,12 +19,14 @@ public class VehiculoDocumentoService implements IVehiculoDocumentoService {
 
     @Override
     public VehiculoDocumentoModel crearVehiculoDocumento(VehiculoDocumentoModel vehiculoDocumento) {
+
         VehiculoDocumentoModel vehiculoDocumentoCreado = vehiculoDocumentoRepository.save(vehiculoDocumento);
         return vehiculoDocumentoCreado;
     };
 
     @Override
     public List<VehiculoDocumentoModel> listarVehiculoDocumentos() {
+        
         List<VehiculoDocumentoModel> vehiculoDocumento = vehiculoDocumentoRepository.findAll();
         return vehiculoDocumento;
     };

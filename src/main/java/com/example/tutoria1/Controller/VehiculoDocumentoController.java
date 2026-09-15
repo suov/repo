@@ -39,5 +39,4 @@ public class VehiculoDocumentoController {
     public List<VehiculoDocumentoModel> listarVehiculoDocumento() {
         return vehiculoDocumentoService.listarVehiculoDocumentos();
     }
-
 }

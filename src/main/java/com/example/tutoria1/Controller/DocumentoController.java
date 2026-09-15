@@ -29,17 +29,15 @@ public class DocumentoController {
         this.documentoService = documentoService;
     }
 
-    /* Crear Documento */
     @PostMapping
     public DocumentoResponseDto crearDocumento(
             @RequestBody DocumentoRequestDto documentoRequest
-        ) {
+        ) {    
         DocumentoModel documento = convertirAmodel(documentoRequest);
         DocumentoModel documentoCreado = documentoService.crearDocumento(documento);
         return convertirAResponse(documentoCreado);
     }
 
-    /* Obtener Documento por ID */
     @GetMapping("/{id}")
     public DocumentoResponseDto obtenerDocumentoPorId(
             @PathVariable("id") Long id
@@ -48,7 +46,6 @@ public class DocumentoController {
         return convertirAResponse(documento);
     }
 
-    /* Actualizar Documento */
     @PutMapping("/{id}")
     public DocumentoResponseDto actualizarDocumento(
             @PathVariable("id") Long id,
@@ -59,7 +56,6 @@ public class DocumentoController {
         return convertirAResponse(documentoActualizado);
     }
 
-    /* Eliminar Documento */
     @DeleteMapping("/{id}")
     public void eliminarDocumento(
             @PathVariable("id") Long id
@@ -67,24 +63,23 @@ public class DocumentoController {
         documentoService.eliminarDocumento(id);
     }
 
-    /* Listar todos los Documentos */
     @GetMapping
     public List<DocumentoResponseDto> listarDocumentos() {
         List<DocumentoModel> documentos = documentoService.listarDocumentos();
+        /* Retornamos un secuencial para recorrer */
         return documentos.stream()
-                .map(this::convertirAResponse)
-                .collect(Collectors.toList());
+                .map(this::convertirAResponse) /* Recorremos cada uno de los secuenciales y los pasamos al dto */
+                .collect(Collectors.toList()); /* Ordena lo que colectamos en una lista */
     }
 
-    /* Listar documentos por tipo de vehículo */
     @GetMapping("/tipoVehiculo")
     public List<DocumentoResponseDto> listarDocumentosPorTipoVehiculo(
             @RequestParam("tipoVehiculo") TipoVehiculo tipoVehiculo
         ) {
         List<DocumentoModel> documentos = documentoService.listarDocumentosPorTipoVehiculo(tipoVehiculo);
         return documentos.stream()
-                .map(this::convertirAResponse)
-                .collect(Collectors.toList());
+                .map(this::convertirAResponse) /* Recorremos cada uno de los secuenciales y los pasamos al dto */
+                .collect(Collectors.toList()); /* Ordena lo que colectamos en una lista */
     }
 
     /* ---------------------------DTOS------------------------------------ */

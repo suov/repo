@@ -19,16 +19,19 @@ public class DocumentoService implements IDocumentoService {
     }
 
     public DocumentoModel crearDocumento(DocumentoModel documento) {
+
         DocumentoModel documentoCreado = documentoRepository.save(documento);
         return documentoCreado;
     }
 
     public DocumentoModel obtenerDocumentoPorId(Long id) {
+
         DocumentoModel documentoEncontrado = documentoRepository.findById(id).orElse(null);
         return documentoEncontrado;
     }
 
     public DocumentoModel actualizarDocumento(Long id, DocumentoModel documento) {
+
         DocumentoModel documentoExistente = documentoRepository.findById(id).orElse(null);
         if (documentoExistente != null) {
             documentoExistente.setCodigoDocumentoParametrizado(documento.getCodigoDocumentoParametrizado());
@@ -47,11 +50,13 @@ public class DocumentoService implements IDocumentoService {
     }
 
     public List<DocumentoModel> listarDocumentos() {
+
         List<DocumentoModel> documentos = documentoRepository.findAll();
         return documentos;
     }
 
     public List<DocumentoModel> listarDocumentosPorTipoVehiculo(TipoVehiculo tipoVehiculo) {
+        
         List<DocumentoModel> documentos = documentoRepository.findByTipoVehiculoAlQueAplica(tipoVehiculo);
         return documentos;
     }
