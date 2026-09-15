@@ -3,7 +3,6 @@ package com.example.tutoria1.Model;
 import java.time.LocalDate;
 
 import com.example.tutoria1.Enums.VehiculoDocumento.VehiculoDocumentoStatus;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CheckConstraint;
 import jakarta.persistence.Column;

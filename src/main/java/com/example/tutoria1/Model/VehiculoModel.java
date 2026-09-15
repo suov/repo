@@ -5,7 +5,6 @@ import java.util.List;
 import com.example.tutoria1.Enums.Vehiculo.TipoCombustible;
 import com.example.tutoria1.Enums.Vehiculo.TipoServicio;
 import com.example.tutoria1.Enums.Vehiculo.TipoVehiculo;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.CheckConstraint;
