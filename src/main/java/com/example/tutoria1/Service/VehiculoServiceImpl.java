@@ -6,6 +6,7 @@ import com.example.tutoria1.Service.interfaces.VehiculoService;
 import com.example.tutoria1.repository.VehiculoRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -104,4 +105,17 @@ public class VehiculoServiceImpl implements VehiculoService {
 
         vehiculoRepository.delete(vehiculo);
     }
+
+    @Override
+    public VehiculoModel consultarVehiculoPorPlaca(String placa) {
+        return vehiculoRepository.findByPlaca(placa)
+                .orElse(null);
+    }
+
+    @Override
+    public VehiculoModel consultarVehiculoPorTipVehiculo(String tipoVehiculo) {
+        return vehiculoRepository.findByTipoVehiculo(tipoVehiculo)
+                .orElse(null);
+    }
+
 }
