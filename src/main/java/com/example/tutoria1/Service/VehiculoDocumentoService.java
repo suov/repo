@@ -4,9 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.example.tutoria1.Enums.VehiculoDocumento.VehiculoDocumentoStatus;
 import com.example.tutoria1.Model.VehiculoDocumentoModel;
-import com.example.tutoria1.Model.VehiculoModel;
 import com.example.tutoria1.Service.interfaces.IVehiculoDocumentoService;
 import com.example.tutoria1.repository.VehiculoDocumentoRepository;
 
