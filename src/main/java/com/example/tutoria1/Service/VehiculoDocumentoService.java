@@ -30,9 +30,4 @@ public class VehiculoDocumentoService implements IVehiculoDocumentoService {
         List<VehiculoDocumentoModel> vehiculoDocumento = vehiculoDocumentoRepository.findAll();
         return vehiculoDocumento;
     };
-
-    @Override
-    public List<VehiculoModel> buscarVehiculoPorEstadoDocumento(VehiculoDocumentoStatus estado) {
-        return vehiculoDocumentoRepository.buscarVehiculoPorEstadoDocumento(estado);
-    }
 };

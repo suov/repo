@@ -11,6 +11,4 @@ public interface IVehiculoDocumentoService {
     VehiculoDocumentoModel crearVehiculoDocumento(VehiculoDocumentoModel vehiculoDocumento);
 
     List<VehiculoDocumentoModel> listarVehiculoDocumentos();
-
-    List<VehiculoModel> buscarVehiculoPorEstadoDocumento(VehiculoDocumentoStatus estado);
 }

@@ -17,4 +17,5 @@ public interface VehiculoService {
     List<VehiculoModel> consultarVehiculosPorTipoVehiculo(String tipoVehiculo);
     List<VehiculoModel> consultarVehiculosPorTipoDocumento(String codigoDocumento);
     VehiculoDocumentoModel agregarDocumento(Long vehiculoId, VehiculoDocumentoModel vehiculoDocumento);
+    List<VehiculoModel> consultarVehiculosPorEstadoDocumento(String estadoDocumento);
 }

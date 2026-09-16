@@ -3,6 +3,7 @@ package com.example.tutoria1.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.example.tutoria1.Enums.Vehiculo.TipoVehiculo;
+import com.example.tutoria1.Enums.VehiculoDocumento.VehiculoDocumentoStatus;
 import com.example.tutoria1.Model.VehiculoModel;
 
 import java.util.List;
@@ -14,4 +15,5 @@ public interface VehiculoRepository extends JpaRepository<VehiculoModel, Long> {
     Optional<VehiculoModel> findByPlaca(String placa);
     List<VehiculoModel> findByTipoVehiculo(TipoVehiculo tipoVehiculo);
     List<VehiculoModel> findDistinctByDocumentosDocumentoCodigoDocumentoParametrizado(String codigoDocumentoParametrizado);
+    List<VehiculoModel> findDistinctByDocumentosEstadoDocumento(VehiculoDocumentoStatus estadoDocumento);
 }

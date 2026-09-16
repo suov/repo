@@ -85,6 +85,15 @@ public class VehiculoController {
                 .body(convertirDocumentoAResponse(documento));
     }
 
+    @GetMapping("/estadoDocumento/{estadoDocumento}")
+    public List<VehiculoResponseDto> buscarVehiculosPorEstadoDocumento(@PathVariable String estadoDocumento){
+
+        return vehiculoService.consultarVehiculosPorEstadoDocumento(estadoDocumento)
+            .stream()
+            .map(this::convertirAResponse)
+            .collect(Collectors.toList());
+    }
+    
     /* ----------------------- */
 
     @GetMapping("/{id}")

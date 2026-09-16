@@ -205,4 +205,14 @@ public class VehiculoServiceImpl implements VehiculoService {
         return vehiculoDocumentoRepository.save(vehiculoDocumento);
     }
 
+    @Override
+    public List<VehiculoModel> consultarVehiculosPorEstadoDocumento(String estadoDocumento) {
+        
+        try{
+            VehiculoDocumentoStatus estado = VehiculoDocumentoStatus.valueOf(estadoDocumento.trim().toUpperCase());
+            return vehiculoRepository.findDistinctByDocumentosEstadoDocumento(estado);
+        } catch (IllegalArgumentException e){
+            return List.of();
+        }
+    }
 }

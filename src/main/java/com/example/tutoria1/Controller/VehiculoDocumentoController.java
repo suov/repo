@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.tutoria1.Dto.Vehiculo.Response.VehiculoResponseDto;
 import com.example.tutoria1.Enums.VehiculoDocumento.VehiculoDocumentoStatus;
 import com.example.tutoria1.Model.VehiculoDocumentoModel;
 import com.example.tutoria1.Model.VehiculoModel;
@@ -42,13 +43,4 @@ public class VehiculoDocumentoController {
     public List<VehiculoDocumentoModel> listarVehiculoDocumento() {
         return vehiculoDocumentoService.listarVehiculoDocumentos();
     }
-
-    @GetMapping("/vehiculoPorDocumentoStatus/{estado}")
-    public ResponseEntity<List<VehiculoModel>> buscarVehiculoPorEstadoDocumento(
-            @PathVariable VehiculoDocumentoStatus estado) {
-        List<VehiculoModel> vehiculoDocumentos = vehiculoDocumentoService
-                .buscarVehiculoPorEstadoDocumento(estado);
-        return ResponseEntity.ok(vehiculoDocumentos);
-    }
-
 }
