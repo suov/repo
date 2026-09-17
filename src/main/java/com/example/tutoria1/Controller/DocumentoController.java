@@ -3,6 +3,8 @@ package com.example.tutoria1.Controller;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.tutoria1.Dto.Documento.Request.DocumentoRequestDto;
 import com.example.tutoria1.Dto.Documento.Response.DocumentoResponseDto;
+import com.example.tutoria1.Dto.Exception.ApiResponseDTO;
 import com.example.tutoria1.Enums.Documento.TipoVehiculo;
 import com.example.tutoria1.Model.DocumentoModel;
 import com.example.tutoria1.Service.DocumentoService;
@@ -30,18 +33,25 @@ public class DocumentoController {
     }
 
     @PostMapping
-    public DocumentoResponseDto crearDocumento(
+    public ResponseEntity<Object> crearDocumento(
             @RequestBody DocumentoRequestDto documentoRequest
         ) {    
+
         DocumentoModel documento = convertirAmodel(documentoRequest);
         DocumentoModel documentoCreado = documentoService.crearDocumento(documento);
-        return convertirAResponse(documentoCreado);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(
+                    new ApiResponseDTO<>(
+                        "Documento creado correctamente",
+                        convertirAResponse(documentoCreado))
+                );
     }
 
     @GetMapping("/{id}")
     public DocumentoResponseDto obtenerDocumentoPorId(
             @PathVariable("id") Long id
         ) {
+
         DocumentoModel documento = documentoService.obtenerDocumentoPorId(id);
         return convertirAResponse(documento);
     }
@@ -51,21 +61,32 @@ public class DocumentoController {
             @PathVariable("id") Long id,
             @RequestBody DocumentoRequestDto documentoRequest
         ) {
+
         DocumentoModel documento = convertirAmodel(documentoRequest);
         DocumentoModel documentoActualizado = documentoService.actualizarDocumento(id, documento);
         return convertirAResponse(documentoActualizado);
     }
 
     @DeleteMapping("/{id}")
-    public void eliminarDocumento(
+    public ResponseEntity<Object> eliminarDocumento(
             @PathVariable("id") Long id
         ) {
+
+        DocumentoModel documentoEliminado = documentoService.obtenerDocumentoPorId(id);
         documentoService.eliminarDocumento(id);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(
+                    new ApiResponseDTO<>(
+                        "Documento eliminado correctamente",
+                        convertirAResponse(documentoEliminado))
+                );
     }
 
     @GetMapping
     public List<DocumentoResponseDto> listarDocumentos() {
+
         List<DocumentoModel> documentos = documentoService.listarDocumentos();
+        
         /* Retornamos un secuencial para recorrer */
         return documentos.stream()
                 .map(this::convertirAResponse) /* Recorremos cada uno de los secuenciales y los pasamos al dto */
@@ -76,13 +97,14 @@ public class DocumentoController {
     public List<DocumentoResponseDto> listarDocumentosPorTipoVehiculo(
             @RequestParam("tipoVehiculo") TipoVehiculo tipoVehiculo
         ) {
+            
         List<DocumentoModel> documentos = documentoService.listarDocumentosPorTipoVehiculo(tipoVehiculo);
         return documentos.stream()
                 .map(this::convertirAResponse) /* Recorremos cada uno de los secuenciales y los pasamos al dto */
                 .collect(Collectors.toList()); /* Ordena lo que colectamos en una lista */
     }
 
-    /* ---------------------------DTOS------------------------------------ */
+    /* ---------------------------CONSTRUCTORES DE DTOS------------------------------------ */
 
     /* Convertir RequestDto a DocumentoModel */
     private DocumentoModel convertirAmodel(DocumentoRequestDto dto) {
