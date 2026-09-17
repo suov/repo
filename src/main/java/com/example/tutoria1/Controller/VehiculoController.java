@@ -1,10 +1,10 @@
 package com.example.tutoria1.Controller;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.example.tutoria1.Dto.VehiculoDocumento.Request.VehiculoDocumentoRequestDto;
+import com.example.tutoria1.Dto.Exception.ApiResponseDTO;
 import com.example.tutoria1.Dto.Vehiculo.Request.VehiculoRequestDto;
 import com.example.tutoria1.Dto.VehiculoDocumento.Response.VehiculoDocumentoResponseDto;
 import com.example.tutoria1.Dto.Vehiculo.Response.VehiculoResponseDto;
@@ -16,6 +16,7 @@ import com.example.tutoria1.Service.interfaces.VehiculoService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/vehiculos")
@@ -28,13 +29,20 @@ public class VehiculoController {
     }
 
     @PostMapping
-    public ResponseEntity<VehiculoResponseDto> crearVehiculo(@RequestBody VehiculoRequestDto vehiculoRequest) {
+    public ResponseEntity<Object> crearVehiculo(
+        @RequestBody VehiculoRequestDto vehiculoRequest
+    ) {
 
         VehiculoModel vehiculoCreado = vehiculoService.crearVehiculo(convertirAModelo(vehiculoRequest));
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(convertirAResponse(vehiculoCreado));
+                .body(
+                    new ApiResponseDTO<>(
+                        "Vehículo creado correctamente", 
+                        convertirAResponse(vehiculoCreado)
+                    )
+                );
     }
 
     @GetMapping
@@ -46,52 +54,98 @@ public class VehiculoController {
 
     /* Filtros de busqueda ---------------- */
 
-    @GetMapping("/{placa}")
-    public ResponseEntity<VehiculoResponseDto> buscarVehiculoPorPlaca(@PathVariable String placa) {
+    @GetMapping("/placa/{placa}")
+    public ResponseEntity<Object> buscarVehiculoPorPlaca(
+        @PathVariable String placa
+    ) {
 
-        Optional<VehiculoModel> vehiculo = vehiculoService.consultarVehiculoPorPlaca(placa);
-        if (vehiculo.isPresent()) {
-            return ResponseEntity.ok(convertirAResponse(vehiculo.get()));
-        }
-        return ResponseEntity.notFound().build();
+        VehiculoModel vehiculo = vehiculoService.consultarVehiculoPorPlaca(placa)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Vehículo no encontrado"));
+
+        return ResponseEntity.ok(
+            convertirAResponse(vehiculo)
+        );
     }
 
-    @GetMapping("/{tipoVehiculo}")
-    public List<VehiculoResponseDto> buscarVehiculosPorTipoVehiculo(@PathVariable String tipoVehiculo) {
-        return vehiculoService.consultarVehiculosPorTipoVehiculo(tipoVehiculo).stream()
+    @GetMapping("/tipo/{tipoVehiculo}")
+    public ResponseEntity<Object> buscarVehiculosPorTipoVehiculo(
+        @PathVariable String tipoVehiculo
+    ) {
+
+        List<VehiculoModel> vehiculos = vehiculoService.consultarVehiculosPorTipoVehiculo(tipoVehiculo);
+
+        if (vehiculos.isEmpty()) {
+            throw new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "No se encuentran vehículos de ese tipo");
+        }
+
+        return ResponseEntity.ok(
+                vehiculos.stream()
                 .map(this::convertirAResponse)
-                .collect(Collectors.toList());
+                .collect(Collectors.toList())
+            );
     }
 
     @GetMapping("/tipoDocumento/{codigoDocumento}")
-    public List<VehiculoResponseDto> buscarVehiculosPorTipoDocumento(
+    public ResponseEntity<Object> buscarVehiculosPorTipoDocumento(
             @PathVariable String codigoDocumento) {
-        return vehiculoService.consultarVehiculosPorTipoDocumento(codigoDocumento).stream()
+
+        List<VehiculoModel> vehiculos = vehiculoService.consultarVehiculosPorTipoDocumento(codigoDocumento);
+
+        if (vehiculos.isEmpty()) {
+            throw new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "No se encuentran vehículos con ese tipo de documento asociado");
+        }
+
+        return ResponseEntity.ok(
+                vehiculos.stream()
                 .map(this::convertirAResponse)
-                .collect(Collectors.toList());
+                .collect(Collectors.toList())
+            );
     }
 
     @PostMapping("/{vehiculoId}/documentos")
-    public ResponseEntity<VehiculoDocumentoResponseDto> agregarDocumento(
+    public ResponseEntity<Object> agregarDocumento(
             @PathVariable Long vehiculoId,
-            @RequestBody VehiculoDocumentoRequestDto documentoRequest) {
+            @RequestBody VehiculoDocumentoRequestDto documentoRequest
+        ) {
 
         VehiculoDocumentoModel documento = vehiculoService.agregarDocumento(
-                vehiculoId,
-                convertirDocumentoAModelo(documentoRequest));
+            vehiculoId,
+            convertirDocumentoAModelo(documentoRequest)
+        );
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(convertirDocumentoAResponse(documento));
+                .body(
+                    new ApiResponseDTO<>(
+                        "Documento asociado al vehículo correctamente", 
+                        convertirDocumentoAResponse(documento)
+                    )
+                );
     }
 
     @GetMapping("/estadoDocumento/{estadoDocumento}")
-    public List<VehiculoResponseDto> buscarVehiculosPorEstadoDocumento(@PathVariable String estadoDocumento){
+    public ResponseEntity<Object> buscarVehiculosPorEstadoDocumento(
+        @PathVariable String estadoDocumento
+    ){
+        List<VehiculoModel> vehiculos = vehiculoService.consultarVehiculosPorEstadoDocumento(estadoDocumento);
 
-        return vehiculoService.consultarVehiculosPorEstadoDocumento(estadoDocumento)
-            .stream()
+        if (vehiculos.isEmpty()) {
+            throw new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "No se encuentran vehículos con documentos en ese estado");
+        }
+
+        return ResponseEntity.ok(
+            vehiculos.stream()
             .map(this::convertirAResponse)
-            .collect(Collectors.toList());
+            .collect(Collectors.toList())
+        );
     }
     
     /* ----------------------- */
@@ -104,20 +158,30 @@ public class VehiculoController {
     @PutMapping("/{id}")
     public VehiculoResponseDto actualizarVehiculo(
             @PathVariable Long id,
-            @RequestBody VehiculoRequestDto vehiculoRequest) {
+            @RequestBody VehiculoRequestDto vehiculoRequest
+        ) {
 
         return convertirAResponse(
-                vehiculoService.actualizarVehiculo(id, convertirAModelo(vehiculoRequest)));
+                vehiculoService.actualizarVehiculo(
+                    id, 
+                    convertirAModelo(vehiculoRequest)
+                )
+            );
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminarVehiculo(@PathVariable Long id) {
+    public ResponseEntity<Object> eliminarVehiculo(@PathVariable Long id) {
 
+        VehiculoModel vehiculoEliminado = vehiculoService.obtenerVehiculoPorId(id);
         vehiculoService.eliminarVehiculo(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(new ApiResponseDTO<>(
+                "Vehículo eliminado correctamente",
+                convertirAResponse(vehiculoEliminado))
+            );
     }
 
-/* -----------------------------DTOS------------------------------------- */
+/* -----------------------------CONSTRUCTOR DE DTOS------------------------------------- */
 
     private VehiculoModel convertirAModelo(VehiculoRequestDto dto) {
         VehiculoModel vehiculo = new VehiculoModel();

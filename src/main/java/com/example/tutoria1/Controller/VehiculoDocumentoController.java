@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.tutoria1.Dto.Exception.ApiResponseDTO;
 import com.example.tutoria1.Model.VehiculoDocumentoModel;
 import com.example.tutoria1.Service.VehiculoDocumentoService;
 
@@ -24,7 +25,7 @@ public class VehiculoDocumentoController {
     }
 
     @PostMapping
-    public ResponseEntity<VehiculoDocumentoModel> crearVehiculoDocumento(
+    public ResponseEntity<Object> crearVehiculoDocumento(
             @RequestBody VehiculoDocumentoModel vehiculoDocumento) {
 
         VehiculoDocumentoModel vehiculoDocumentoCreado = vehiculoDocumentoService
@@ -32,7 +33,11 @@ public class VehiculoDocumentoController {
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(vehiculoDocumentoCreado);
+                .body(
+                    new ApiResponseDTO<>(
+                        "Relación vehículo-documento creada correctamente",
+                        vehiculoDocumentoCreado)
+                    );
     }
 
     @GetMapping
@@ -40,3 +45,4 @@ public class VehiculoDocumentoController {
         return vehiculoDocumentoService.listarVehiculoDocumentos();
     }
 }
+
