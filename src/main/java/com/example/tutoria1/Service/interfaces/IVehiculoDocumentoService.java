@@ -9,4 +9,7 @@ public interface IVehiculoDocumentoService {
     VehiculoDocumentoModel crearVehiculoDocumento(VehiculoDocumentoModel vehiculoDocumento);
 
     List<VehiculoDocumentoModel> listarVehiculoDocumentos();
+
+    /// Funcion no funciona List<VehiculoDocumentoModel>
+    /// buscarVehoculosPorNombreDocumento(String nombreDocumento);
 }
