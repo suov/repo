@@ -29,16 +29,4 @@ public class VehiculoDocumentoService implements IVehiculoDocumentoService {
         return vehiculoDocumento;
     };
 
-    /*
-     * Función de buscar por nombre documento - No funciona
-     * 
-     * @Override
-     * public List<VehiculoDocumentoModel> buscarVehoculosPorNombreDocumento(String
-     * nombreDocumento) {
-     * List<VehiculoDocumentoModel> vehiculosEncontrados =
-     * vehiculoDocumentoRepository
-     * .findByNombreDocumento(nombreDocumento);
-     * return vehiculosEncontrados;
-     * }
-     */
 };
