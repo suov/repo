@@ -11,14 +11,9 @@ import lombok.Setter;
 public class DocumentoResponseDto {
 
     private Long id;
-
     private String codigoDocumentoParametrizado;
-
     private String nombreDocumento;
-
     private TipoVehiculo tipoVehiculoAlQueAplica;
-
     private RequisitoSegunVehiculo requisitoSegunTipoVehiculo;
-
     private String descripcion;
 }

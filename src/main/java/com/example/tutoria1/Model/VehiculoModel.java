@@ -6,6 +6,7 @@ import com.example.tutoria1.Enums.Vehiculo.TipoCombustible;
 import com.example.tutoria1.Enums.Vehiculo.TipoServicio;
 import com.example.tutoria1.Enums.Vehiculo.TipoVehiculo;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.CheckConstraint;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -71,6 +72,6 @@ public class VehiculoModel {
         @Column(name = "linea", nullable = false)
         private String linea;
 
-        @OneToMany(mappedBy = "vehiculo")
+        @OneToMany(mappedBy = "vehiculo", cascade = CascadeType.ALL, orphanRemoval = true)
         private List<VehiculoDocumentoModel> documentos;
 }
