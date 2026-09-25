@@ -26,14 +26,16 @@ public class DocumentoService implements IDocumentoService {
         return documentoCreado;
     }
 
+    @Override
     public DocumentoModel obtenerDocumentoPorId(Long id) {
 
         return documentoRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(
-                HttpStatus.NOT_FOUND,
-                "Documento no encontrado"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Documento no encontrado"));
     }
 
+    @Override
     public DocumentoModel actualizarDocumento(Long id, DocumentoModel documento) {
 
         DocumentoModel documentoExistente = obtenerDocumentoPorId(id);
@@ -45,19 +47,22 @@ public class DocumentoService implements IDocumentoService {
         return documentoRepository.save(documentoExistente);
     }
 
+    @Override
     public void eliminarDocumento(Long id) {
         DocumentoModel documento = obtenerDocumentoPorId(id);
         documentoRepository.delete(documento);
     }
 
+    @Override
     public List<DocumentoModel> listarDocumentos() {
 
         List<DocumentoModel> documentos = documentoRepository.findAll();
         return documentos;
     }
 
+    @Override
     public List<DocumentoModel> listarDocumentosPorTipoVehiculo(TipoVehiculo tipoVehiculo) {
-        
+
         List<DocumentoModel> documentos = documentoRepository.findByTipoVehiculoAlQueAplica(tipoVehiculo);
         return documentos;
     }
