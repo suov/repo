@@ -46,6 +46,12 @@ public class VehiculoDocumentoModel {
     @JoinColumn(name = "documento_id", nullable = false)
     private DocumentoModel documento;
 
+    @Column(name = "nombre_archivo", nullable = false)
+    private String nombreArchivo;
+
+    @Column(name = "archivo_base64", nullable = false, columnDefinition = "LONGTEXT")
+    private String archivoBase64;
+
     @Column(name = "fecha_expedicion", nullable = false)
     private LocalDate fechaExpedicion;
 

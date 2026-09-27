@@ -10,6 +10,8 @@ import lombok.Setter;
 public class VehiculoDocumentoRequestDto {
 
     private Long documentoId;
+    private String nombreArchivo;
+    private String archivoBase64;
     private LocalDate fechaExpedicion;
     private LocalDate fechaVencimiento;
     private String archivoPdfBase64;

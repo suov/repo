@@ -13,6 +13,7 @@ public class VehiculoDocumentoResponseDto {
 
     private Long id;
     private Long documentoId;
+    private String nombreArchivo;
     private LocalDate fechaExpedicion;
     private LocalDate fechaVencimiento;
     private VehiculoDocumentoStatus estadoDocumento;

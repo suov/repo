@@ -112,7 +112,7 @@ public class VehiculoController {
     }
 
     @PostMapping("/{vehiculoId}/documentos")
-    public ResponseEntity<Object> agregarDocumento(
+    public ResponseEntity<Object> agregarDocumentos(
             @PathVariable Long vehiculoId,
             @RequestBody VehiculoDocumentoRequestDto documentoRequest
     ) {
@@ -229,6 +229,8 @@ public class VehiculoController {
                 new VehiculoDocumentoModel();
 
         vehiculoDocumento.setDocumento(documento);
+        vehiculoDocumento.setNombreArchivo(dto.getNombreArchivo());
+        vehiculoDocumento.setArchivoBase64(dto.getArchivoBase64());
         vehiculoDocumento.setFechaExpedicion(dto.getFechaExpedicion());
         vehiculoDocumento.setFechaVencimiento(dto.getFechaVencimiento());
 
@@ -284,6 +286,7 @@ public class VehiculoController {
 
         dto.setId(modelo.getId());
         dto.setDocumentoId(modelo.getDocumento().getId());
+        dto.setNombreArchivo(modelo.getNombreArchivo());
         dto.setFechaExpedicion(modelo.getFechaExpedicion());
         dto.setFechaVencimiento(modelo.getFechaVencimiento());
         dto.setEstadoDocumento(modelo.getEstadoDocumento());
