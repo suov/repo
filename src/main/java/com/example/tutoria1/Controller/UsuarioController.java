@@ -8,7 +8,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,11 +15,11 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.example.tutoria1.Dto.Exception.ApiResponseDTO;
-import com.example.tutoria1.Dto.Usuario.Request.UsuarioRequestDto;
+/* import com.example.tutoria1.Dto.Usuario.Request.UsuarioRequestDto; */
 import com.example.tutoria1.Dto.Usuario.Response.UsuarioResponseDto;
-import com.example.tutoria1.Model.PersonaModel;
+/* import com.example.tutoria1.Model.PersonaModel; */
 import com.example.tutoria1.Model.UsuarioModel;
-import com.example.tutoria1.Model.UsuarioPKModel;
+/* import com.example.tutoria1.Model.UsuarioPKModel; */
 import com.example.tutoria1.Service.UsuarioService;
 
 @RestController
@@ -49,18 +48,6 @@ public class UsuarioController {
                 .collect(Collectors.toList());
     }
 
-    /* @PutMapping("/{idPersona}/{login}")
-    public UsuarioResponseDto actualizarUsuario(
-            @PathVariable Long idPersona,
-            @PathVariable String login,
-            @RequestBody UsuarioRequestDto usuarioRequest
-    ) {
-
-        UsuarioModel usuario = convertirAModel(usuarioRequest);
-        UsuarioModel usuarioActualizado = usuarioService.actualizarUsuario(usuario, idPersona, login);
-        return convertirAResponse(usuarioActualizado);
-    } */
-
     @PutMapping("/{login}/password")
     public ResponseEntity<Object> cambiarContraseña(
             @PathVariable String login,
@@ -88,7 +75,7 @@ public class UsuarioController {
     }
 
     /* MAPPERS */
-    private UsuarioModel convertirAModel(UsuarioRequestDto dto) {
+    /* private UsuarioModel convertirAModel(UsuarioRequestDto dto) {
         UsuarioModel usuario = new UsuarioModel();
 
         UsuarioPKModel usuarioPK = new UsuarioPKModel();
@@ -102,7 +89,7 @@ public class UsuarioController {
 
         usuario.setPassword(dto.getPassword());
         return usuario;
-    }
+    } */
 
     private UsuarioResponseDto convertirAResponse(UsuarioModel usuario) {
         if (usuario == null) {
