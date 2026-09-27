@@ -27,7 +27,7 @@ public class PersonaService implements IPersonaService {
         this.usuarioRepository = usuarioRepository;
     };
 
-    /* Post */
+    /* Post  - OK */
     @Override
     public PersonaModel crearPersona(PersonaModel persona) {
 

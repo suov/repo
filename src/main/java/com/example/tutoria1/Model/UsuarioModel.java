@@ -1,16 +1,11 @@
 package com.example.tutoria1.Model;
 
-import java.util.UUID;
-
-import com.example.tutoria1.Enums.Persona.TipoPersona;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
