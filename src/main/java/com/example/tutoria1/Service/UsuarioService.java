@@ -39,4 +39,5 @@ public class UsuarioService implements IUsuarioService {
         usuario.setPassword(nuevaPassword);
         return usuarioRepository.save(usuario);
     }
+
 }

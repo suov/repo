@@ -1,5 +1,15 @@
 package com.example.tutoria1.Service;
 
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
+import com.example.tutoria1.Dto.VehiculoDocumento.Request.VehiculoDocumentoRequestDto;
 import com.example.tutoria1.Enums.Vehiculo.TipoVehiculo;
 import com.example.tutoria1.Enums.VehiculoDocumento.VehiculoDocumentoStatus;
 import com.example.tutoria1.Model.DocumentoModel;
@@ -7,14 +17,8 @@ import com.example.tutoria1.Model.VehiculoDocumentoModel;
 import com.example.tutoria1.Model.VehiculoModel;
 import com.example.tutoria1.Service.interfaces.VehiculoService;
 import com.example.tutoria1.repository.DocumentoRepository;
-import com.example.tutoria1.repository.VehiculoRepository;
 import com.example.tutoria1.repository.VehiculoDocumentoRepository;
-import org.springframework.stereotype.Service;
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
+import com.example.tutoria1.repository.VehiculoRepository;
 
 @Service
 public class VehiculoServiceImpl implements VehiculoService {
@@ -173,6 +177,7 @@ public class VehiculoServiceImpl implements VehiculoService {
                 codigoDocumento.trim());
     }
 
+    /* TUTORIA 2 */
     @Override
     public VehiculoDocumentoModel agregarDocumento(
             Long vehiculoId,
@@ -186,6 +191,12 @@ public class VehiculoServiceImpl implements VehiculoService {
                 || vehiculoDocumento.getDocumento().getId() == null) {
             throw new IllegalArgumentException("El documento asociado es obligatorio");
         }
+
+        if (vehiculoDocumento.getArchivoBase64() == null || vehiculoDocumento.getArchivoBase64().isBlank()) {
+            throw new IllegalArgumentException("El PDF en Base64 es obligatorio");
+        }
+
+        validarBase64Pdf(vehiculoDocumento.getArchivoBase64());
 
         DocumentoModel documento = documentoRepository.findById(
                 vehiculoDocumento.getDocumento().getId())
@@ -203,6 +214,65 @@ public class VehiculoServiceImpl implements VehiculoService {
         vehiculoDocumento.setDocumento(documento);
         vehiculoDocumento.setEstadoDocumento(VehiculoDocumentoStatus.EN_VERIFICACION);
         return vehiculoDocumentoRepository.save(vehiculoDocumento);
+    }
+
+    @Override
+    public List<VehiculoDocumentoModel> agregarDocumentos(
+            Long vehiculoId,
+            List<VehiculoDocumentoRequestDto> documentosRequest
+        ) {
+
+        if (documentosRequest == null || documentosRequest.isEmpty()) {
+            throw new IllegalArgumentException("Debes enviar al menos un documento");
+        }
+
+        List<VehiculoDocumentoModel> resultado = new ArrayList<>();
+
+        for (VehiculoDocumentoRequestDto dto : documentosRequest) {
+
+            if (dto == null || dto.getDocumentoId() == null) {
+                throw new IllegalArgumentException("Cada documento debe tener documentoId");
+            }
+
+            DocumentoModel documento = documentoRepository.findById(dto.getDocumentoId())
+                    .orElseThrow(() -> new IllegalArgumentException("El documento no existe"));
+
+            if (dto.getArchivoBase64() == null || dto.getArchivoBase64().isBlank()) {
+                throw new IllegalArgumentException("El PDF en Base64 es obligatorio");
+            }
+
+            validarBase64Pdf(dto.getArchivoBase64());
+
+            VehiculoDocumentoModel entidad = vehiculoDocumentoRepository
+                    .findByVehiculoIdAndDocumentoId(vehiculoId, dto.getDocumentoId())
+                    .orElse(new VehiculoDocumentoModel());
+
+            entidad.setVehiculo(obtenerVehiculoPorId(vehiculoId));
+            entidad.setDocumento(documento);
+            entidad.setNombreArchivo(dto.getNombreArchivo());
+            entidad.setArchivoBase64(dto.getArchivoBase64());
+            entidad.setFechaExpedicion(dto.getFechaExpedicion());
+            entidad.setFechaVencimiento(dto.getFechaVencimiento());
+            entidad.setEstadoDocumento(VehiculoDocumentoStatus.EN_VERIFICACION);
+
+            resultado.add(vehiculoDocumentoRepository.save(entidad));
+        }
+
+        return resultado;
+    }
+
+    private void validarBase64Pdf(String base64) {
+
+        String limpio = base64
+                .replace("data:application/pdf;base64,", "")
+                .replace("data:application/octet-stream;base64,", "")
+                .trim();
+
+        try {
+            Base64.getDecoder().decode(limpio);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("El archivo no es un Base64 válido");
+        }
     }
 
     @Override
