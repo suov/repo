@@ -74,4 +74,7 @@ public class VehiculoModel {
 
         @OneToMany(mappedBy = "vehiculo", cascade = CascadeType.ALL, orphanRemoval = true)
         private List<VehiculoDocumentoModel> documentos;
+
+        @OneToMany(mappedBy = "vehiculo", cascade = CascadeType.ALL, orphanRemoval = true)
+        private List<VehiculoPersonaModel> conductores;
 }

@@ -1,5 +1,6 @@
 package com.example.tutoria1.Controller;
 
+import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,160 +31,172 @@ public class VehiculoController {
 
     @PostMapping
     public ResponseEntity<Object> crearVehiculo(
-        @RequestBody VehiculoRequestDto vehiculoRequest
+            @RequestBody VehiculoRequestDto vehiculoRequest
     ) {
-
-        VehiculoModel vehiculoCreado = vehiculoService.crearVehiculo(convertirAModelo(vehiculoRequest));
+        VehiculoModel vehiculoCreado = vehiculoService.crearVehiculo(
+                convertirAModelo(vehiculoRequest)
+        );
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(
-                    new ApiResponseDTO<>(
-                        "Vehículo creado correctamente", 
-                        convertirAResponse(vehiculoCreado)
-                    )
+                        new ApiResponseDTO<>(
+                                "Vehículo creado correctamente",
+                                convertirAResponse(vehiculoCreado)
+                        )
                 );
     }
 
     @GetMapping
     public List<VehiculoResponseDto> listarVehiculos() {
-        return vehiculoService.listarVehiculos().stream()
+        return vehiculoService.listarVehiculos()
+                .stream()
                 .map(this::convertirAResponse)
                 .collect(Collectors.toList());
     }
 
-    /* Filtros de busqueda ---------------- */
-
     @GetMapping("/placa/{placa}")
     public ResponseEntity<Object> buscarVehiculoPorPlaca(
-        @PathVariable String placa
+            @PathVariable String placa
     ) {
-
-        VehiculoModel vehiculo = vehiculoService.consultarVehiculoPorPlaca(placa)
+        VehiculoModel vehiculo = vehiculoService
+                .consultarVehiculoPorPlaca(placa)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
-                        "Vehículo no encontrado"));
+                        "Vehículo no encontrado"
+                ));
 
-        return ResponseEntity.ok(
-            convertirAResponse(vehiculo)
-        );
+        return ResponseEntity.ok(convertirAResponse(vehiculo));
     }
 
     @GetMapping("/tipo/{tipoVehiculo}")
     public ResponseEntity<Object> buscarVehiculosPorTipoVehiculo(
-        @PathVariable String tipoVehiculo
+            @PathVariable String tipoVehiculo
     ) {
-
-        List<VehiculoModel> vehiculos = vehiculoService.consultarVehiculosPorTipoVehiculo(tipoVehiculo);
+        List<VehiculoModel> vehiculos = vehiculoService
+                .consultarVehiculosPorTipoVehiculo(tipoVehiculo);
 
         if (vehiculos.isEmpty()) {
             throw new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "No se encuentran vehículos de ese tipo");
+                    HttpStatus.NOT_FOUND,
+                    "No se encuentran vehículos de ese tipo"
+            );
         }
 
         return ResponseEntity.ok(
                 vehiculos.stream()
-                .map(this::convertirAResponse)
-                .collect(Collectors.toList())
-            );
+                        .map(this::convertirAResponse)
+                        .collect(Collectors.toList())
+        );
     }
 
     @GetMapping("/tipoDocumento/{codigoDocumento}")
     public ResponseEntity<Object> buscarVehiculosPorTipoDocumento(
-            @PathVariable String codigoDocumento) {
-
-        List<VehiculoModel> vehiculos = vehiculoService.consultarVehiculosPorTipoDocumento(codigoDocumento);
+            @PathVariable String codigoDocumento
+    ) {
+        List<VehiculoModel> vehiculos = vehiculoService
+                .consultarVehiculosPorTipoDocumento(codigoDocumento);
 
         if (vehiculos.isEmpty()) {
             throw new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "No se encuentran vehículos con ese tipo de documento asociado");
+                    HttpStatus.NOT_FOUND,
+                    "No se encuentran vehículos con ese tipo de documento asociado"
+            );
         }
 
         return ResponseEntity.ok(
                 vehiculos.stream()
-                .map(this::convertirAResponse)
-                .collect(Collectors.toList())
-            );
+                        .map(this::convertirAResponse)
+                        .collect(Collectors.toList())
+        );
     }
 
     @PostMapping("/{vehiculoId}/documentos")
     public ResponseEntity<Object> agregarDocumentos(
             @PathVariable Long vehiculoId,
-            @RequestBody List<VehiculoDocumentoRequestDto> documentosRequest
-        ) {
-
-        List<VehiculoDocumentoModel> documentos = vehiculoService.agregarDocumentos(vehiculoId, documentosRequest);
+            @RequestBody VehiculoDocumentoRequestDto documentoRequest
+    ) {
+        VehiculoDocumentoModel documento = vehiculoService.agregarDocumento(
+                vehiculoId,
+                convertirDocumentoAModelo(documentoRequest)
+        );
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(
-                    new ApiResponseDTO<>(
-                        "Documentos asociados al vehículo correctamente",
-                        documentos.stream()
-                            .map(this::convertirDocumentoAResponse)
-                            .collect(Collectors.toList())
-                    )
+                        new ApiResponseDTO<>(
+                                "Documento asociado al vehículo correctamente",
+                                convertirDocumentoAResponse(documento)
+                        )
                 );
     }
 
     @GetMapping("/estadoDocumento/{estadoDocumento}")
     public ResponseEntity<Object> buscarVehiculosPorEstadoDocumento(
-        @PathVariable String estadoDocumento
-    ){
-        List<VehiculoModel> vehiculos = vehiculoService.consultarVehiculosPorEstadoDocumento(estadoDocumento);
+            @PathVariable String estadoDocumento
+    ) {
+        List<VehiculoModel> vehiculos = vehiculoService
+                .consultarVehiculosPorEstadoDocumento(estadoDocumento);
 
         if (vehiculos.isEmpty()) {
             throw new ResponseStatusException(
-                HttpStatus.NOT_FOUND,
-                "No se encuentran vehículos con documentos en ese estado");
+                    HttpStatus.NOT_FOUND,
+                    "No se encuentran vehículos con documentos en ese estado"
+            );
         }
 
         return ResponseEntity.ok(
-            vehiculos.stream()
-            .map(this::convertirAResponse)
-            .collect(Collectors.toList())
+                vehiculos.stream()
+                        .map(this::convertirAResponse)
+                        .collect(Collectors.toList())
         );
     }
-    
-    /* ----------------------- */
 
     @GetMapping("/{id}")
-    public VehiculoResponseDto obtenerVehiculoPorId(@PathVariable Long id) {
-        return convertirAResponse(vehiculoService.obtenerVehiculoPorId(id));
+    public VehiculoResponseDto obtenerVehiculoPorId(
+            @PathVariable Long id
+    ) {
+        return convertirAResponse(
+                vehiculoService.obtenerVehiculoPorId(id)
+        );
     }
 
     @PutMapping("/{id}")
     public VehiculoResponseDto actualizarVehiculo(
             @PathVariable Long id,
             @RequestBody VehiculoRequestDto vehiculoRequest
-        ) {
-
+    ) {
         return convertirAResponse(
                 vehiculoService.actualizarVehiculo(
-                    id, 
-                    convertirAModelo(vehiculoRequest)
+                        id,
+                        convertirAModelo(vehiculoRequest)
                 )
-            );
+        );
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Object> eliminarVehiculo(@PathVariable Long id) {
+    public ResponseEntity<Object> eliminarVehiculo(
+            @PathVariable Long id
+    ) {
+        VehiculoModel vehiculoEliminado =
+                vehiculoService.obtenerVehiculoPorId(id);
 
-        VehiculoModel vehiculoEliminado = vehiculoService.obtenerVehiculoPorId(id);
         vehiculoService.eliminarVehiculo(id);
+
         return ResponseEntity.status(HttpStatus.OK)
-            .body(new ApiResponseDTO<>(
-                "Vehículo eliminado correctamente",
-                convertirAResponse(vehiculoEliminado))
-            );
+                .body(
+                        new ApiResponseDTO<>(
+                                "Vehículo eliminado correctamente",
+                                convertirAResponse(vehiculoEliminado)
+                        )
+                );
     }
 
-/* -----------------------------CONSTRUCTOR DE DTOS------------------------------------- */
-
-    private VehiculoModel convertirAModelo(VehiculoRequestDto dto) {
+    private VehiculoModel convertirAModelo(
+            VehiculoRequestDto dto
+    ) {
         VehiculoModel vehiculo = new VehiculoModel();
+
         vehiculo.setTipoVehiculo(dto.getTipoVehiculo());
         vehiculo.setTipoServicio(dto.getTipoServicio());
         vehiculo.setTipoCombustible(dto.getTipoCombustible());
@@ -194,33 +207,56 @@ public class VehiculoController {
         vehiculo.setMarca(dto.getMarca());
         vehiculo.setLinea(dto.getLinea());
 
-        /* Solo si tiene documentos entramos a recorrer el arreglo */
         if (dto.getDocumentos() != null) {
-            vehiculo.setDocumentos(dto.getDocumentos().stream()
-                    .map(this::convertirDocumentoAModelo)
-                    .collect(Collectors.toList()));
+            vehiculo.setDocumentos(
+                    dto.getDocumentos()
+                            .stream()
+                            .map(this::convertirDocumentoAModelo)
+                            .collect(Collectors.toList())
+            );
         }
 
         return vehiculo;
     }
 
-    private VehiculoDocumentoModel convertirDocumentoAModelo(VehiculoDocumentoRequestDto dto) {
-
+    private VehiculoDocumentoModel convertirDocumentoAModelo(
+            VehiculoDocumentoRequestDto dto
+    ) {
         DocumentoModel documento = new DocumentoModel();
         documento.setId(dto.getDocumentoId());
 
-        VehiculoDocumentoModel vehiculoDocumento = new VehiculoDocumentoModel();
+        VehiculoDocumentoModel vehiculoDocumento =
+                new VehiculoDocumentoModel();
+
         vehiculoDocumento.setDocumento(documento);
         vehiculoDocumento.setNombreArchivo(dto.getNombreArchivo());
         vehiculoDocumento.setArchivoBase64(dto.getArchivoBase64());
         vehiculoDocumento.setFechaExpedicion(dto.getFechaExpedicion());
         vehiculoDocumento.setFechaVencimiento(dto.getFechaVencimiento());
+
+        if (dto.getArchivoPdfBase64() != null
+                && !dto.getArchivoPdfBase64().isBlank()) {
+
+            try {
+                byte[] archivoPdf = Base64.getDecoder()
+                        .decode(dto.getArchivoPdfBase64());
+
+                vehiculoDocumento.setArchivoPdf(archivoPdf);
+            } catch (IllegalArgumentException exception) {
+                throw new IllegalArgumentException(
+                        "El archivo PDF no tiene un formato Base64 válido"
+                );
+            }
+        }
+
         return vehiculoDocumento;
     }
 
-    private VehiculoResponseDto convertirAResponse(VehiculoModel modelo) {
-
+    private VehiculoResponseDto convertirAResponse(
+            VehiculoModel modelo
+    ) {
         VehiculoResponseDto dto = new VehiculoResponseDto();
+
         dto.setId(modelo.getId());
         dto.setTipoVehiculo(modelo.getTipoVehiculo());
         dto.setTipoServicio(modelo.getTipoServicio());
@@ -231,21 +267,37 @@ public class VehiculoController {
         dto.setModelo(modelo.getModelo());
         dto.setMarca(modelo.getMarca());
         dto.setLinea(modelo.getLinea());
-        dto.setDocumentos(modelo.getDocumentos().stream()
-                .map(this::convertirDocumentoAResponse)
-                .collect(Collectors.toList()));
+
+        dto.setDocumentos(
+                modelo.getDocumentos()
+                        .stream()
+                        .map(this::convertirDocumentoAResponse)
+                        .collect(Collectors.toList())
+        );
+
         return dto;
     }
 
-    private VehiculoDocumentoResponseDto convertirDocumentoAResponse(VehiculoDocumentoModel modelo) {
-        
-        VehiculoDocumentoResponseDto dto = new VehiculoDocumentoResponseDto();
+    private VehiculoDocumentoResponseDto convertirDocumentoAResponse(
+            VehiculoDocumentoModel modelo
+    ) {
+        VehiculoDocumentoResponseDto dto =
+                new VehiculoDocumentoResponseDto();
+
         dto.setId(modelo.getId());
         dto.setDocumentoId(modelo.getDocumento().getId());
         dto.setNombreArchivo(modelo.getNombreArchivo());
         dto.setFechaExpedicion(modelo.getFechaExpedicion());
         dto.setFechaVencimiento(modelo.getFechaVencimiento());
         dto.setEstadoDocumento(modelo.getEstadoDocumento());
+
+        if (modelo.getArchivoPdf() != null) {
+            String archivoPdfBase64 = Base64.getEncoder()
+                    .encodeToString(modelo.getArchivoPdf());
+
+            dto.setArchivoPdfBase64(archivoPdfBase64);
+        }
+
         return dto;
     }
 }
