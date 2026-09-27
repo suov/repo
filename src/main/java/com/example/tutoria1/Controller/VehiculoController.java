@@ -109,22 +109,21 @@ public class VehiculoController {
     }
 
     @PostMapping("/{vehiculoId}/documentos")
-    public ResponseEntity<Object> agregarDocumento(
+    public ResponseEntity<Object> agregarDocumentos(
             @PathVariable Long vehiculoId,
-            @RequestBody VehiculoDocumentoRequestDto documentoRequest
+            @RequestBody List<VehiculoDocumentoRequestDto> documentosRequest
         ) {
 
-        VehiculoDocumentoModel documento = vehiculoService.agregarDocumento(
-            vehiculoId,
-            convertirDocumentoAModelo(documentoRequest)
-        );
+        List<VehiculoDocumentoModel> documentos = vehiculoService.agregarDocumentos(vehiculoId, documentosRequest);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(
                     new ApiResponseDTO<>(
-                        "Documento asociado al vehículo correctamente", 
-                        convertirDocumentoAResponse(documento)
+                        "Documentos asociados al vehículo correctamente",
+                        documentos.stream()
+                            .map(this::convertirDocumentoAResponse)
+                            .collect(Collectors.toList())
                     )
                 );
     }
@@ -212,6 +211,8 @@ public class VehiculoController {
 
         VehiculoDocumentoModel vehiculoDocumento = new VehiculoDocumentoModel();
         vehiculoDocumento.setDocumento(documento);
+        vehiculoDocumento.setNombreArchivo(dto.getNombreArchivo());
+        vehiculoDocumento.setArchivoBase64(dto.getArchivoBase64());
         vehiculoDocumento.setFechaExpedicion(dto.getFechaExpedicion());
         vehiculoDocumento.setFechaVencimiento(dto.getFechaVencimiento());
         return vehiculoDocumento;
@@ -241,6 +242,7 @@ public class VehiculoController {
         VehiculoDocumentoResponseDto dto = new VehiculoDocumentoResponseDto();
         dto.setId(modelo.getId());
         dto.setDocumentoId(modelo.getDocumento().getId());
+        dto.setNombreArchivo(modelo.getNombreArchivo());
         dto.setFechaExpedicion(modelo.getFechaExpedicion());
         dto.setFechaVencimiento(modelo.getFechaVencimiento());
         dto.setEstadoDocumento(modelo.getEstadoDocumento());
