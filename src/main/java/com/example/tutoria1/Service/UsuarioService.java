@@ -1,4 +1,4 @@
-/* package com.example.tutoria1.Service;
+package com.example.tutoria1.Service;
 
 import java.util.List;
 
@@ -36,17 +36,16 @@ public class UsuarioService implements IUsuarioService {
         // Creación de usuarioPK como ID
         UsuarioPKModel usuarioPk = new UsuarioPKModel();
         usuarioPk.setLogin(login);
-        usuarioPk.setPersona(persona);
+        /* usuarioPk.setPersona(persona); */
 
         // Actualización Usuario
         return usuarioRepository.findById(usuarioPk)
                 .map(usuarioEncontrado -> {
-                    usuarioEncontrado.setContrasena(usuario.getContrasena());
-                    usuarioEncontrado.setApiKey(usuario.getApiKey());
+                    /* usuarioEncontrado.setContrasena(usuario.getContrasena());
+                    usuarioEncontrado.setApiKey(usuario.getApiKey()); */
                     return usuarioRepository.save(usuarioEncontrado);
                 }).orElseThrow(
                         () -> new RuntimeException("Usuario No encontrado"));
     }
 
 }
- */
