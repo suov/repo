@@ -1,8 +1,11 @@
 package com.example.tutoria1.Model;
 
+import java.io.Serializable;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,7 +15,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UsuarioPKModel {
+@EqualsAndHashCode
+public class UsuarioPKModel implements Serializable {
 
     @Column(name = "login", nullable = false)
     private String login;
