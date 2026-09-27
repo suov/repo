@@ -6,10 +6,10 @@ import com.example.tutoria1.Model.UsuarioModel;
 
 public interface IUsuarioService {
 
-    UsuarioModel crearUsuario(UsuarioModel usuario);
-
-    UsuarioModel actualizarUsuario(UsuarioModel usuario, Long idPersona, String login);
+    /* UsuarioModel actualizarUsuario(UsuarioModel usuario, Long idPersona, String login); */
 
     List<UsuarioModel> buscarUsuarios();
+
+    UsuarioModel cambiarContraseña(String login, String nuevaContraseña);
 
 }

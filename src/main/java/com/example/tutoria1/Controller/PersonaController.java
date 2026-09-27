@@ -2,6 +2,7 @@ package com.example.tutoria1.Controller;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.example.tutoria1.Dto.Exception.ApiResponseDTO;
 import com.example.tutoria1.Dto.Persona.Request.PersonaRequestDto;
@@ -35,6 +36,12 @@ public class PersonaController {
     public List<PersonaResponseDto> obtenerPersonas() {
 
         List<PersonaModel> personas = personaService.listarPersonas();
+
+        if(personas.isEmpty()) {
+            throw new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "No se encuentran personas que mostrar");
+        }
 
         return personas.stream()
                 .map(this::convertirAResponse)

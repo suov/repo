@@ -1,6 +1,7 @@
 package com.example.tutoria1.Controller;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.example.tutoria1.Dto.Exception.ApiResponseDTO;
 import com.example.tutoria1.Dto.Usuario.Request.UsuarioRequestDto;
@@ -36,29 +38,18 @@ public class UsuarioController {
 
         List<UsuarioModel> usuarios = usuarioService.buscarUsuarios();
 
+        if(usuarios.isEmpty()) {
+            throw new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "No se encuentran usuarios para mostrar");
+        }
+
         return usuarios.stream()
                 .map(this::convertirAResponse)
                 .collect(Collectors.toList());
     }
 
-    @PostMapping
-    public ResponseEntity<Object> crearUsuario(
-            @RequestBody UsuarioRequestDto dto
-    ) {
-
-        UsuarioModel usuario = convertirAModel(dto);
-        UsuarioModel usuarioCreado = usuarioService.crearUsuario(usuario);
-
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(
-                        new ApiResponseDTO<>(
-                                "Usuario creado correctamente",
-                                convertirAResponse(usuarioCreado)
-                        )
-                );
-    }
-
-    @PutMapping("/{idPersona}/{login}")
+    /* @PutMapping("/{idPersona}/{login}")
     public UsuarioResponseDto actualizarUsuario(
             @PathVariable Long idPersona,
             @PathVariable String login,
@@ -68,6 +59,32 @@ public class UsuarioController {
         UsuarioModel usuario = convertirAModel(usuarioRequest);
         UsuarioModel usuarioActualizado = usuarioService.actualizarUsuario(usuario, idPersona, login);
         return convertirAResponse(usuarioActualizado);
+    } */
+
+    @PutMapping("/{login}/password")
+    public ResponseEntity<Object> cambiarContraseña(
+            @PathVariable String login,
+            @RequestBody Map<String, String> request
+    ) {
+
+        String nuevaContraseña = request.get("contraseña");
+
+        if (login == null || login.isBlank()) {
+            throw new IllegalArgumentException("El login es obligatorio");
+        }
+
+        if (nuevaContraseña == null || nuevaContraseña.isBlank()) {
+            throw new IllegalArgumentException("La nueva contraseña es obligatoria");
+        }
+
+        UsuarioModel usuario = usuarioService.cambiarContraseña(login, nuevaContraseña);
+
+        return ResponseEntity.ok(
+                new ApiResponseDTO<>(
+                    "Contraseña actualizada correctamente", 
+                    usuario
+                )
+        );
     }
 
     /* MAPPERS */
