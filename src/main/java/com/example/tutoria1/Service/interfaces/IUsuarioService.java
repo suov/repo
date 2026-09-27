@@ -8,7 +8,7 @@ public interface IUsuarioService {
 
     UsuarioModel crearUsuario(UsuarioModel usuario);
 
-    UsuarioModel actualizarUsuario(UsuarioModel usuario, Integer persona, String login);
+    UsuarioModel actualizarUsuario(UsuarioModel usuario, Long idPersona, String login);
 
     List<UsuarioModel> buscarUsuarios();
 

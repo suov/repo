@@ -20,32 +20,42 @@ public class UsuarioService implements IUsuarioService {
 
     @Override
     public UsuarioModel crearUsuario(UsuarioModel usuario) {
-        UsuarioModel nuevoUsuario = usuarioRepository.save(usuario);
-        return nuevoUsuario;
+        return usuarioRepository.save(usuario);
     }
 
     @Override
     public List<UsuarioModel> buscarUsuarios() {
-        List<UsuarioModel> usuarios = usuarioRepository.findAll();
-        return usuarios;
+        return usuarioRepository.findAll();
     }
 
     @Override
-    public UsuarioModel actualizarUsuario(UsuarioModel usuario, Integer persona, String login) {
+    public UsuarioModel actualizarUsuario(
+        UsuarioModel usuario,
+        Long idPersona, String login
+    ) {
 
-        // Creación de usuarioPK como ID
+        if(usuario == null) {
+            throw new IllegalArgumentException("El usuario no puede ser nulo");
+        }
+
+        if(idPersona == null || login == null || login.isBlank()) {
+            throw new IllegalArgumentException("La persona y el login son obligatorios");
+        }
+
         UsuarioPKModel usuarioPk = new UsuarioPKModel();
         usuarioPk.setLogin(login);
-        /* usuarioPk.setPersona(persona); */
+        usuarioPk.setIdpersona(idPersona);
 
-        // Actualización Usuario
         return usuarioRepository.findById(usuarioPk)
-                .map(usuarioEncontrado -> {
-                    /* usuarioEncontrado.setContrasena(usuario.getContrasena());
-                    usuarioEncontrado.setApiKey(usuario.getApiKey()); */
-                    return usuarioRepository.save(usuarioEncontrado);
-                }).orElseThrow(
-                        () -> new RuntimeException("Usuario No encontrado"));
+                .map(usuarioExistente -> {
+                    //Solo se actualiza la contraseña
+                    if(usuario.getPassword() != null && !usuario.getPassword().isBlank()) {
+                        usuarioExistente.setPassword(usuario.getPassword());
+                    }
+
+                    /* No actualizamos Apikey */
+                    return usuarioRepository.save(usuarioExistente);
+                }).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
     }
 
 }

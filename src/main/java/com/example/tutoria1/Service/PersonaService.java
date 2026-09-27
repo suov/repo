@@ -47,11 +47,11 @@ public class PersonaService implements IPersonaService {
             /* Creamos el usuario asociado */
             UsuarioModel usuario = new UsuarioModel();
             /* Login */
-            usuario.setUsuarioPK(new UsuarioPKModel(generarLogin(persona), persona.getId()));
+            usuario.setUsuarioPK(new UsuarioPKModel(generarLogin(personaCreada), personaCreada.getId()));
             /* idPersona */
-            usuario.setPersona(persona);
+            usuario.setPersona(personaCreada);
             /* Password */
-            usuario.setPassword(persona.getDocumento());
+            usuario.setPassword(personaCreada.getDocumento());
             /* Apikey */
             usuario.setApikey(UUID.randomUUID().toString());
 
@@ -61,16 +61,24 @@ public class PersonaService implements IPersonaService {
         return personaCreada;
     };
 
-    /* Get */
+    /* Get - OK */
     @Override
     public List<PersonaModel> listarPersonas() {
-        List<PersonaModel> personas = personaRepository.findAll();
-        return personas;
+        
+        return personaRepository.findAll();
     };
 
-    /* Put */
+    /* Put - OK */
     @Override
     public PersonaModel actualizarPersona(PersonaModel persona, Long id) {
+
+        if (id == null || id <= 0) {
+            throw new IllegalArgumentException("Ingrese un Id valido para realizar la busqueda");
+        }
+
+        if (!personaRepository.existsById(id)) {
+            throw new IllegalArgumentException("Usuario con ese ID no fue encontrado");
+        }
 
         return personaRepository.findById(id)
                 .map(personaActualizado -> {
@@ -84,6 +92,7 @@ public class PersonaService implements IPersonaService {
                         () -> new RuntimeException("Usuario No encontrado con ID: " + id));
     }
 
+    /* Complemento */
     private String generarLogin(PersonaModel persona) {
         if (persona == null) {
             throw new IllegalStateException("La persona es obligatoria para crear el usuario.");
