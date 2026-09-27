@@ -13,6 +13,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -26,7 +27,10 @@ import lombok.Setter;
 @AllArgsConstructor
 @Entity
 @Table(name = "vehiculo_documento", check = {
-        @CheckConstraint(name = "chk_estado_documento", constraint = "(estado_documento IN ('HABILITADO', 'VENCIDO', 'EN_VERIFICACION'))")
+        @CheckConstraint(
+                name = "chk_estado_documento",
+                constraint = "(estado_documento IN ('HABILITADO', 'VENCIDO', 'EN_VERIFICACION'))"
+        )
 })
 public class VehiculoDocumentoModel {
 
@@ -52,4 +56,7 @@ public class VehiculoDocumentoModel {
     @Column(name = "estado_documento", nullable = false)
     private VehiculoDocumentoStatus estadoDocumento;
 
+    @Lob
+    @Column(name = "archivo_pdf", columnDefinition = "LONGBLOB")
+    private byte[] archivoPdf;
 }

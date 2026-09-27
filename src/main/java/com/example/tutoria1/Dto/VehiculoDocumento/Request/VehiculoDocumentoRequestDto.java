@@ -12,4 +12,5 @@ public class VehiculoDocumentoRequestDto {
     private Long documentoId;
     private LocalDate fechaExpedicion;
     private LocalDate fechaVencimiento;
+    private String archivoPdfBase64;
 }
