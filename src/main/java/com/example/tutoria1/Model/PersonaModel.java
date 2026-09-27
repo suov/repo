@@ -22,13 +22,30 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "persona", check = @CheckConstraint(name = "chk_tipo_persona", constraint = "tipo_persona IN('C', 'A')"))
+@Table(
+    name = "persona", 
+    check = {
+        @CheckConstraint(
+            name = "chk_tipo_persona", 
+            constraint = "tipo_persona IN('C', 'A')"
+        ),
+        @CheckConstraint(
+            name = "chk_tipo_documento", 
+            constraint = "tipo_documento IN('CC')"
+        )
+    })
 public class PersonaModel {
 
+    //Identificador de persona (Primary Key)
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    //Identificación de la persona
+    @Column(name = "numero_documento", unique = true, nullable = false)
+    private String documento;
+
+    //Tipo de identificación - CC
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo_documento", nullable = false)
     private TipoDocumento tipoDocumento;
@@ -39,9 +56,11 @@ public class PersonaModel {
     @Column(name = "apellido", nullable = false)
     private String apellido;
 
-    @Column(name = "email", nullable = false)
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
+    /* C- Conductor
+    ** A- Administrativo */
     @Column(name = "tipo_persona")
     @Enumerated(EnumType.STRING)
     private TipoPersona tipoPersona;

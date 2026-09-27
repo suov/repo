@@ -1,10 +1,7 @@
 package com.example.tutoria1.Model;
 
-import java.io.Serializable;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
-import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,12 +12,11 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "usuarioPK")
-public class UsuarioPKModel implements Serializable {
+public class UsuarioPKModel {
 
-    @Column(name = "login")
+    @Column(name = "login", nullable = false)
     private String login;
 
-    @Column(name = "persona")
-    private Integer persona;
+    @Column(name = "idpersona", nullable = false)
+    private Long idpersona;
 }
