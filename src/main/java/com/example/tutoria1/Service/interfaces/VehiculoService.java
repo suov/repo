@@ -31,6 +31,4 @@ public interface VehiculoService {
             List<VehiculoDocumentoRequestDto> documentosRequest);
 
     List<VehiculoModel> consultarVehiculosPorEstadoDocumento(String estadoDocumento);
-
-    List<VehiculoModel> asociarVehiculosPorConductor(String estadoConductor);
 }

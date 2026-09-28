@@ -12,7 +12,6 @@ import org.springframework.web.server.ResponseStatusException;
 import com.example.tutoria1.Dto.VehiculoDocumento.Request.VehiculoDocumentoRequestDto;
 import com.example.tutoria1.Enums.Vehiculo.TipoVehiculo;
 import com.example.tutoria1.Enums.VehiculoDocumento.VehiculoDocumentoStatus;
-import com.example.tutoria1.Enums.VehiculoPersona.EstadoConductor;
 import com.example.tutoria1.Model.DocumentoModel;
 import com.example.tutoria1.Model.VehiculoDocumentoModel;
 import com.example.tutoria1.Model.VehiculoModel;
@@ -28,7 +27,6 @@ public class VehiculoServiceImpl implements VehiculoService {
     private final DocumentoRepository documentoRepository;
     private final VehiculoRepository vehiculoRepository;
     private final VehiculoDocumentoRepository vehiculoDocumentoRepository;
-    private final VehiculoPersonaRepository vehiculoPersonaRepository;
 
     public VehiculoServiceImpl(
             VehiculoRepository vehiculoRepository,
@@ -38,7 +36,6 @@ public class VehiculoServiceImpl implements VehiculoService {
         this.vehiculoRepository = vehiculoRepository;
         this.documentoRepository = documentoRepository;
         this.vehiculoDocumentoRepository = vehiculoDocumentoRepository;
-        this.vehiculoPersonaRepository = vehiculoPersonaRepository;
     }
 
     @Override
