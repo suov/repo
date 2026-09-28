@@ -20,10 +20,10 @@ public interface VehiculoPersonaRepository
 
         List<VehiculoPersonaModel> findByVehiculoId(Long idVehiculo);
 
-        @Query("select v.*" +
-                        "from vehiculo_persona vp" +
-                        "INNER JOIN vehiculo v ON vp.id_vehiculo = v.id" +
-                        "where vp.estado_conductor=PO AND vp.id_persona=:id_conductor")
+        @Query(value = "select v.*" +
+                        "from vehiculo_persona vp " +
+                        "INNER JOIN vehiculo v ON vp.id_vehiculo = v.id " +
+                        "where vp.estado_conductor=PO AND vp.id_persona=:id_conductor ", nativeQuery = true)
         List<VehiculoModel> asociarVehiculosPorCapacidadConductor(
                         @Param("id_conductor") Long idConductor);
 }
