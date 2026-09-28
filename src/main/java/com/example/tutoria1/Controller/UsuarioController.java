@@ -15,11 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.example.tutoria1.Dto.Exception.ApiResponseDTO;
-/* import com.example.tutoria1.Dto.Usuario.Request.UsuarioRequestDto; */
 import com.example.tutoria1.Dto.Usuario.Response.UsuarioResponseDto;
-/* import com.example.tutoria1.Model.PersonaModel; */
 import com.example.tutoria1.Model.UsuarioModel;
-/* import com.example.tutoria1.Model.UsuarioPKModel; */
 import com.example.tutoria1.Service.UsuarioService;
 
 @RestController
@@ -74,23 +71,21 @@ public class UsuarioController {
         );
     }
 
+    /* TUTORÍA 2 */
+    @GetMapping("/{login}/api-key/regenerar")
+    public ResponseEntity<Object> regenerarApiKey(@PathVariable String login) {
+
+        UsuarioModel usuario = usuarioService.regenerarApiKey(login);
+
+        return ResponseEntity.ok(
+                new ApiResponseDTO<>(
+                    "APIKey regenerado correctamente", 
+                    convertirAResponse(usuario)
+                )
+        );
+    }
+
     /* MAPPERS */
-    /* private UsuarioModel convertirAModel(UsuarioRequestDto dto) {
-        UsuarioModel usuario = new UsuarioModel();
-
-        UsuarioPKModel usuarioPK = new UsuarioPKModel();
-        usuarioPK.setLogin(dto.getLogin());
-        usuarioPK.setIdpersona(dto.getIdpersona());
-        usuario.setUsuarioPK(usuarioPK);
-
-        PersonaModel persona = new PersonaModel();
-        persona.setId(dto.getIdpersona());
-        usuario.setPersona(persona);
-
-        usuario.setPassword(dto.getPassword());
-        return usuario;
-    } */
-
     private UsuarioResponseDto convertirAResponse(UsuarioModel usuario) {
         if (usuario == null) {
             return null;

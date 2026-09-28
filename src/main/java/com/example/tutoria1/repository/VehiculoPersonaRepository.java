@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import com.example.tutoria1.Enums.VehiculoPersona.EstadoConductor;
 import com.example.tutoria1.Model.VehiculoPersonaModel;
 
 public interface VehiculoPersonaRepository
@@ -17,4 +18,6 @@ public interface VehiculoPersonaRepository
     );
 
     List<VehiculoPersonaModel> findByVehiculoId(Long idVehiculo);
+
+    List<VehiculoPersonaModel> findByEstadoConductor(EstadoConductor estadoConductor);
 }

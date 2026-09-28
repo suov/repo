@@ -3,6 +3,7 @@ package com.example.tutoria1.Dto.Vehiculo.Response;
 import java.util.List;
 
 import com.example.tutoria1.Dto.VehiculoDocumento.Response.VehiculoDocumentoResponseDto;
+import com.example.tutoria1.Dto.VehiculoPersona.Response.VehiculoPersonaResponseDto;
 import com.example.tutoria1.Enums.Vehiculo.TipoCombustible;
 import com.example.tutoria1.Enums.Vehiculo.TipoServicio;
 import com.example.tutoria1.Enums.Vehiculo.TipoVehiculo;
@@ -25,4 +26,5 @@ public class VehiculoResponseDto {
     private String marca;
     private String linea;
     private List<VehiculoDocumentoResponseDto> documentos;
+    private List<VehiculoPersonaResponseDto> conductores;
 }

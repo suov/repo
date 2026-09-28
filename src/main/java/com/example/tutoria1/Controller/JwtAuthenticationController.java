@@ -1,8 +1,8 @@
 package com.example.tutoria1.Controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -19,11 +19,16 @@ import com.example.tutoria1.Dto.Jwt.JwtResponse;
 @CrossOrigin
 public class JwtAuthenticationController {
 
-	@Autowired
-	JWTAuthenticationConfig jwtAuthenticationConfig;
-	
-	@Autowired
-	private UserDetailsService jwtInMemoryUserDetailsService;
+	private final JWTAuthenticationConfig jwtAuthenticationConfig;
+	private final UserDetailsService jwtInMemoryUserDetailsService;
+
+	JwtAuthenticationController(
+		JWTAuthenticationConfig jwtAuthenticationConfig, 
+		UserDetailsService jwtInMemoryUserDetailsService
+	) {
+		this.jwtAuthenticationConfig = jwtAuthenticationConfig;
+		this.jwtInMemoryUserDetailsService = jwtInMemoryUserDetailsService;
+	}
 	
 	@RequestMapping(
 			value = "/authenticate",
@@ -32,19 +37,32 @@ public class JwtAuthenticationController {
 			produces = MediaType.APPLICATION_JSON_VALUE
 	)
 	public ResponseEntity<?> createAuthenticationToken(
-			@RequestBody JwtRequest authenticationRequest
-			) throws Exception {
-		
-		System.out.println("**********************************");
-		System.out.println("authenticationRequest.getUsername():["+authenticationRequest.getUsername()+"]");
-		System.out.println("authenticationRequest.getPassword():["+authenticationRequest.getPassword()+"]");
-		System.out.println("**********************************");		
+		@RequestBody JwtRequest authenticationRequest
+	) throws Exception {
+
+		if (authenticationRequest == null 
+			|| authenticationRequest.getUsername() == null 
+			|| authenticationRequest.getPassword() == null) {
+			throw new BadCredentialsException("Credenciales inválidas");
+		}
+
 		final UserDetails userDetails = jwtInMemoryUserDetailsService
 				.loadUserByUsername(authenticationRequest.getUsername());
-		final String token = jwtAuthenticationConfig.getJWTToken(userDetails.getUsername());
-		System.out.println("**********************************");
-		System.out.println("token:["+token+"]");
-		System.out.println("**********************************");
+
+		if (!userDetails.getPassword().equals(authenticationRequest.getPassword())) {
+			throw new BadCredentialsException("Credenciales inválidas");
+		}
+		
+		final String authority = userDetails.getAuthorities().stream()
+				.findFirst()
+				.map(grantedAuthority -> grantedAuthority.getAuthority())
+				.orElse("ROLE_USER");
+
+		final String token = jwtAuthenticationConfig.getJWTToken(
+			userDetails.getUsername(), 
+			authority
+		);
+		
 		return ResponseEntity.ok(new JwtResponse(token));
 	}
 }

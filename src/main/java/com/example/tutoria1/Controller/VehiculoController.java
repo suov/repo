@@ -33,6 +33,7 @@ public class VehiculoController {
     public ResponseEntity<Object> crearVehiculo(
             @RequestBody VehiculoRequestDto vehiculoRequest
     ) {
+
         VehiculoModel vehiculoCreado = vehiculoService.crearVehiculo(
                 convertirAModelo(vehiculoRequest)
         );
@@ -49,6 +50,7 @@ public class VehiculoController {
 
     @GetMapping
     public List<VehiculoResponseDto> listarVehiculos() {
+
         return vehiculoService.listarVehiculos()
                 .stream()
                 .map(this::convertirAResponse)
@@ -59,6 +61,7 @@ public class VehiculoController {
     public ResponseEntity<Object> buscarVehiculoPorPlaca(
             @PathVariable String placa
     ) {
+
         VehiculoModel vehiculo = vehiculoService
                 .consultarVehiculoPorPlaca(placa)
                 .orElseThrow(() -> new ResponseStatusException(
@@ -73,6 +76,7 @@ public class VehiculoController {
     public ResponseEntity<Object> buscarVehiculosPorTipoVehiculo(
             @PathVariable String tipoVehiculo
     ) {
+
         List<VehiculoModel> vehiculos = vehiculoService
                 .consultarVehiculosPorTipoVehiculo(tipoVehiculo);
 
@@ -94,6 +98,7 @@ public class VehiculoController {
     public ResponseEntity<Object> buscarVehiculosPorTipoDocumento(
             @PathVariable String codigoDocumento
     ) {
+
         List<VehiculoModel> vehiculos = vehiculoService
                 .consultarVehiculosPorTipoDocumento(codigoDocumento);
 
@@ -116,6 +121,7 @@ public class VehiculoController {
             @PathVariable Long vehiculoId,
             @RequestBody VehiculoDocumentoRequestDto documentoRequest
     ) {
+
         VehiculoDocumentoModel documento = vehiculoService.agregarDocumento(
                 vehiculoId,
                 convertirDocumentoAModelo(documentoRequest)
@@ -135,6 +141,7 @@ public class VehiculoController {
     public ResponseEntity<Object> buscarVehiculosPorEstadoDocumento(
             @PathVariable String estadoDocumento
     ) {
+
         List<VehiculoModel> vehiculos = vehiculoService
                 .consultarVehiculosPorEstadoDocumento(estadoDocumento);
 
@@ -156,6 +163,7 @@ public class VehiculoController {
     public VehiculoResponseDto obtenerVehiculoPorId(
             @PathVariable Long id
     ) {
+
         return convertirAResponse(
                 vehiculoService.obtenerVehiculoPorId(id)
         );
@@ -166,6 +174,7 @@ public class VehiculoController {
             @PathVariable Long id,
             @RequestBody VehiculoRequestDto vehiculoRequest
     ) {
+
         return convertirAResponse(
                 vehiculoService.actualizarVehiculo(
                         id,
@@ -178,6 +187,7 @@ public class VehiculoController {
     public ResponseEntity<Object> eliminarVehiculo(
             @PathVariable Long id
     ) {
+
         VehiculoModel vehiculoEliminado =
                 vehiculoService.obtenerVehiculoPorId(id);
 
@@ -192,9 +202,45 @@ public class VehiculoController {
                 );
     }
 
+    /* TUTORÍA 2 */
+    @GetMapping("/por-vencer")
+    public ResponseEntity<Object> buscarVehiculosPorVencer(
+            @RequestParam(defaultValue = "30") Integer dias
+    ) {
+
+        List<VehiculoModel> vehiculos = vehiculoService.listarVehiculos().stream()
+                .filter(vehiculo -> vehiculo.getDocumentos() != null && !vehiculo.getDocumentos().isEmpty())
+                .filter(vehiculo -> vehiculo.getDocumentos().stream().anyMatch(documento ->
+                        documento.getFechaVencimiento() != null &&
+                                documento.getFechaVencimiento().isBefore(java.time.LocalDate.now().plusDays(dias))))
+                .toList();
+
+        if (vehiculos.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encuentran vehículos con documentos por vencer");
+        }
+
+        return ResponseEntity.ok(vehiculos.stream().map(this::convertirAResponse).collect(Collectors.toList()));
+    }
+
+    @GetMapping("/vencidos")
+    public ResponseEntity<Object> buscarVehiculosVencidos() {
+
+        List<VehiculoModel> vehiculos = vehiculoService.consultarVehiculosPorEstadoDocumento("VENCIDO");
+
+        if (vehiculos.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encuentran vehículos con documentos vencidos");
+        }
+
+        return ResponseEntity.ok(vehiculos.stream()
+                .map(this::convertirAResponse)
+                .collect(Collectors.toList()));
+    }
+
+    /* MAPPERS */
     private VehiculoModel convertirAModelo(
             VehiculoRequestDto dto
     ) {
+
         VehiculoModel vehiculo = new VehiculoModel();
 
         vehiculo.setTipoVehiculo(dto.getTipoVehiculo());
@@ -222,6 +268,7 @@ public class VehiculoController {
     private VehiculoDocumentoModel convertirDocumentoAModelo(
             VehiculoDocumentoRequestDto dto
     ) {
+
         DocumentoModel documento = new DocumentoModel();
         documento.setId(dto.getDocumentoId());
 
@@ -255,6 +302,7 @@ public class VehiculoController {
     private VehiculoResponseDto convertirAResponse(
             VehiculoModel modelo
     ) {
+
         VehiculoResponseDto dto = new VehiculoResponseDto();
 
         dto.setId(modelo.getId());
@@ -269,9 +317,23 @@ public class VehiculoController {
         dto.setLinea(modelo.getLinea());
 
         dto.setDocumentos(
-                modelo.getDocumentos()
+                modelo.getDocumentos() == null ? List.of() : modelo.getDocumentos()
                         .stream()
                         .map(this::convertirDocumentoAResponse)
+                        .collect(Collectors.toList())
+        );
+
+        dto.setConductores(
+                modelo.getConductores() == null ? List.of() : modelo.getConductores()
+                        .stream()
+                        .map(asociacion -> new com.example.tutoria1.Dto.VehiculoPersona.Response.VehiculoPersonaResponseDto(
+                                asociacion.getId(),
+                                asociacion.getVehiculo().getId(),
+                                asociacion.getVehiculo().getPlaca(),
+                                asociacion.getPersona().getId(),
+                                asociacion.getPersona().getNombre() + " " + asociacion.getPersona().getApellido(),
+                                asociacion.getFechaAsociacion(),
+                                asociacion.getEstadoConductor()))
                         .collect(Collectors.toList())
         );
 
@@ -281,6 +343,7 @@ public class VehiculoController {
     private VehiculoDocumentoResponseDto convertirDocumentoAResponse(
             VehiculoDocumentoModel modelo
     ) {
+
         VehiculoDocumentoResponseDto dto =
                 new VehiculoDocumentoResponseDto();
 

@@ -16,8 +16,13 @@ import io.jsonwebtoken.Jwts;
 public class JWTAuthenticationConfig {
 	
 	public String getJWTToken(String username) {
+		return getJWTToken(username, "ROLE_USER");
+	}
+	
+	public String getJWTToken(String username, String authority) {
+		
 		List<GrantedAuthority> grantedAuthorities = AuthorityUtils
-				.commaSeparatedStringToAuthorityList("ROLE_USER");
+				.commaSeparatedStringToAuthorityList(authority);
 		
 		String token = Jwts
 				.builder()

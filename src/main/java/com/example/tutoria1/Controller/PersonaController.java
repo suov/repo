@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/persona")
 public class PersonaController {
@@ -77,6 +79,16 @@ public class PersonaController {
         return convertirAResponse(personaActualizada);
     }
 
+    /* TUTORÍA 2 */
+    @GetMapping("/total-por-tipo")
+    public Map<String, Long> totalPersonasPorTipo() {
+
+        return personaService.listarPersonas().stream()
+                .collect(Collectors.groupingBy(
+                        persona -> persona.getTipoPersona() == null ? "SIN_TIPO" : persona.getTipoPersona().name(),
+                        Collectors.counting()
+                ));
+    }
 
     /* MAPPERS */
     private PersonaModel convertirAModel(PersonaRequestDto dto) {

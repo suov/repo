@@ -11,6 +11,7 @@ public class Constans {
 	//Spring Security
 	public static final String LOGIN_URL = "/authenticate";
 	public static final String HEADER_AUTHORIZATION_KEY = "Authorization";
+	public static final String HEADER_API_KEY = "X-API-KEY";
 	public static final String TOKEN_BEARER_PREFIX = "Bearer ";	
 	
 	//JWT

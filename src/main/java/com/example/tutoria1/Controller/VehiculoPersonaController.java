@@ -32,6 +32,7 @@ public class VehiculoPersonaController {
     public ResponseEntity<VehiculoPersonaResponseDto> crearAsociacion(
             @RequestBody VehiculoPersonaRequestDto requestDto
     ) {
+
         VehiculoPersonaResponseDto respuesta =
                 vehiculoPersonaService.crearAsociacion(requestDto);
 
@@ -49,8 +50,18 @@ public class VehiculoPersonaController {
     public ResponseEntity<List<VehiculoPersonaResponseDto>> listarPorVehiculo(
             @PathVariable Long idVehiculo
     ) {
+
         return ResponseEntity.ok(
                 vehiculoPersonaService.listarPorVehiculo(idVehiculo)
+        );
+    }
+
+    @GetMapping("/conductores/pueden-operar")
+    public ResponseEntity<List<VehiculoPersonaResponseDto>> listarConductoresQuePuedenOperar() {
+        return ResponseEntity.ok(
+                vehiculoPersonaService.listarTodos().stream()
+                        .filter(asociacion -> asociacion.getEstadoConductor() == EstadoConductor.PO)
+                        .toList()
         );
     }
 
@@ -59,6 +70,7 @@ public class VehiculoPersonaController {
             @PathVariable Long idAsociacion,
             @RequestParam EstadoConductor estado
     ) {
+
         return ResponseEntity.ok(
                 vehiculoPersonaService.actualizarEstado(
                         idAsociacion,
@@ -71,8 +83,8 @@ public class VehiculoPersonaController {
     public ResponseEntity<Void> eliminarAsociacion(
             @PathVariable Long idAsociacion
     ) {
-        vehiculoPersonaService.eliminarAsociacion(idAsociacion);
 
+        vehiculoPersonaService.eliminarAsociacion(idAsociacion);
         return ResponseEntity.noContent().build();
     }
 }
