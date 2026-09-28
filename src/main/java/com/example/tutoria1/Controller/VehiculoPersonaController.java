@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.tutoria1.Dto.VehiculoPersona.Request.VehiculoPersonaRequestDto;
 import com.example.tutoria1.Dto.VehiculoPersona.Response.VehiculoPersonaResponseDto;
 import com.example.tutoria1.Enums.VehiculoPersona.EstadoConductor;
+import com.example.tutoria1.Model.VehiculoModel;
 import com.example.tutoria1.Service.interfaces.IVehiculoPersonaService;
 
 import lombok.RequiredArgsConstructor;
@@ -26,53 +27,50 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class VehiculoPersonaController {
 
-    private final IVehiculoPersonaService vehiculoPersonaService;
+        private final IVehiculoPersonaService vehiculoPersonaService;
 
-    @PostMapping
-    public ResponseEntity<VehiculoPersonaResponseDto> crearAsociacion(
-            @RequestBody VehiculoPersonaRequestDto requestDto
-    ) {
-        VehiculoPersonaResponseDto respuesta =
-                vehiculoPersonaService.crearAsociacion(requestDto);
+        @PostMapping
+        public ResponseEntity<VehiculoPersonaResponseDto> crearAsociacion(
+                        @RequestBody VehiculoPersonaRequestDto requestDto) {
+                VehiculoPersonaResponseDto respuesta = vehiculoPersonaService.crearAsociacion(requestDto);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(respuesta);
-    }
+                return ResponseEntity.status(HttpStatus.CREATED).body(respuesta);
+        }
 
-    @GetMapping
-    public ResponseEntity<List<VehiculoPersonaResponseDto>> listarTodos() {
-        return ResponseEntity.ok(
-                vehiculoPersonaService.listarTodos()
-        );
-    }
+        @GetMapping
+        public ResponseEntity<List<VehiculoPersonaResponseDto>> listarTodos() {
+                return ResponseEntity.ok(
+                                vehiculoPersonaService.listarTodos());
+        }
 
-    @GetMapping("/vehiculo/{idVehiculo}")
-    public ResponseEntity<List<VehiculoPersonaResponseDto>> listarPorVehiculo(
-            @PathVariable Long idVehiculo
-    ) {
-        return ResponseEntity.ok(
-                vehiculoPersonaService.listarPorVehiculo(idVehiculo)
-        );
-    }
+        @GetMapping("/vehiculo/{idVehiculo}")
+        public ResponseEntity<List<VehiculoPersonaResponseDto>> listarPorVehiculo(
+                        @PathVariable Long idVehiculo) {
+                return ResponseEntity.ok(
+                                vehiculoPersonaService.listarPorVehiculo(idVehiculo));
+        }
 
-    @PatchMapping("/{idAsociacion}/estado")
-    public ResponseEntity<VehiculoPersonaResponseDto> actualizarEstado(
-            @PathVariable Long idAsociacion,
-            @RequestParam EstadoConductor estado
-    ) {
-        return ResponseEntity.ok(
-                vehiculoPersonaService.actualizarEstado(
-                        idAsociacion,
-                        estado
-                )
-        );
-    }
+        @GetMapping("/vehiculo/{id}")
+        public ResponseEntity<List<VehiculoModel>> asociarVehiculosPorCapacidadConductor(
+                        @PathVariable Long idConductor) {
+                return ResponseEntity.ok(vehiculoPersonaService.asociarVehiculosPorCapacidadConductor(idConductor));
+        }
 
-    @DeleteMapping("/{idAsociacion}")
-    public ResponseEntity<Void> eliminarAsociacion(
-            @PathVariable Long idAsociacion
-    ) {
-        vehiculoPersonaService.eliminarAsociacion(idAsociacion);
+        @PatchMapping("/{idAsociacion}/estado")
+        public ResponseEntity<VehiculoPersonaResponseDto> actualizarEstado(
+                        @PathVariable Long idAsociacion,
+                        @RequestParam EstadoConductor estado) {
+                return ResponseEntity.ok(
+                                vehiculoPersonaService.actualizarEstado(
+                                                idAsociacion,
+                                                estado));
+        }
 
-        return ResponseEntity.noContent().build();
-    }
+        @DeleteMapping("/{idAsociacion}")
+        public ResponseEntity<Void> eliminarAsociacion(
+                        @PathVariable Long idAsociacion) {
+                vehiculoPersonaService.eliminarAsociacion(idAsociacion);
+
+                return ResponseEntity.noContent().build();
+        }
 }
