@@ -18,6 +18,7 @@ import org.springframework.web.server.ResponseStatusException;
 import com.example.tutoria1.Dto.VehiculoPersona.Request.VehiculoPersonaRequestDto;
 import com.example.tutoria1.Dto.VehiculoPersona.Response.VehiculoPersonaResponseDto;
 import com.example.tutoria1.Enums.VehiculoPersona.EstadoConductor;
+import com.example.tutoria1.Model.VehiculoModel;
 import com.example.tutoria1.Service.interfaces.IVehiculoPersonaService;
 
 import lombok.RequiredArgsConstructor;
@@ -27,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class VehiculoPersonaController {
 
-    private final IVehiculoPersonaService vehiculoPersonaService;
+        private final IVehiculoPersonaService vehiculoPersonaService;
 
     @PostMapping
     public ResponseEntity<VehiculoPersonaResponseDto> crearAsociacion(
@@ -37,15 +38,14 @@ public class VehiculoPersonaController {
         VehiculoPersonaResponseDto respuesta =
                 vehiculoPersonaService.crearAsociacion(requestDto);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(respuesta);
-    }
+                return ResponseEntity.status(HttpStatus.CREATED).body(respuesta);
+        }
 
-    @GetMapping
-    public ResponseEntity<List<VehiculoPersonaResponseDto>> listarTodos() {
-        return ResponseEntity.ok(
-                vehiculoPersonaService.listarTodos()
-        );
-    }
+        @GetMapping
+        public ResponseEntity<List<VehiculoPersonaResponseDto>> listarTodos() {
+                return ResponseEntity.ok(
+                                vehiculoPersonaService.listarTodos());
+        }
 
     @GetMapping("/vehiculo/{idVehiculo}")
     public ResponseEntity<List<VehiculoPersonaResponseDto>> listarPorVehiculo(
