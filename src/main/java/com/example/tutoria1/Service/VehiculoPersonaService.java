@@ -111,6 +111,7 @@ public class VehiculoPersonaService implements IVehiculoPersonaService {
             Long idAsociacion,
             EstadoConductor estadoConductor
     ) {
+        
         VehiculoPersonaModel asociacion = vehiculoPersonaRepository
                 .findById(idAsociacion)
                 .orElseThrow(() -> new IllegalArgumentException(

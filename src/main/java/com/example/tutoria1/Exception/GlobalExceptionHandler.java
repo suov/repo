@@ -2,6 +2,7 @@ package com.example.tutoria1.Exception;
 
 import java.time.LocalDateTime;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -59,12 +60,25 @@ public class GlobalExceptionHandler {
                 request);
     }
 
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ExceptionResponseDTO> handleDataIntegrityViolationException(
+            DataIntegrityViolationException exception,
+            WebRequest request) {
+
+        return buildResponse(
+                HttpStatus.BAD_REQUEST,
+                "Error de persistencia: " + exception.getMostSpecificCause().getMessage(),
+                request);
+    }
+
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ExceptionResponseDTO> handleUnexpectedException(WebRequest request) {
-        
+    public ResponseEntity<ExceptionResponseDTO> handleUnexpectedException(
+            Exception exception,
+            WebRequest request) {
+
         return buildResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR,
-                "Ocurrió un error inesperado. Intenta nuevamente más tarde",
+                "Ocurrió un error inesperado. Detalle: " + exception.getMessage(),
                 request);
     }
 

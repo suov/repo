@@ -57,17 +57,18 @@ public class WebSecurityConfig {
 		http
 			.csrf((csrf) -> csrf.disable())
 			.authorizeHttpRequests(authz -> authz
-					.requestMatchers(Constans.LOGIN_URL).permitAll()
+					.requestMatchers(Constans.LOGIN_URL).permitAll() //OK
 					.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-					.requestMatchers("/persona/total-por-tipo").permitAll()
-					.requestMatchers("/api/vehiculos/estadoDocumento/**").permitAll()
-					.requestMatchers("/api/vehiculos/placa/**").permitAll()
-					.requestMatchers("/api/vehiculos/por-vencer/**").permitAll()
-					.requestMatchers("/api/vehiculo-persona/conductores/pueden-operar").permitAll()
-					.requestMatchers("/persona/**").hasRole("ADMIN")
-					.requestMatchers("/usuario/**").hasRole("ADMIN")
-					.requestMatchers("/api/vehiculos/**").hasRole("ADMIN")
-					.requestMatchers("/api/vehiculo-persona/**").hasRole("ADMIN")
+					.requestMatchers("/persona/total-por-tipo").permitAll() //OK
+					.requestMatchers("/api/vehiculos/estadoDocumento/**").permitAll() //OK
+					.requestMatchers("/api/vehiculos/placa/**").permitAll() //OK
+					.requestMatchers("/api/vehiculos/por-vencer/**").permitAll() //OK
+					.requestMatchers("/api/vehiculos/vencidos").permitAll() //OK
+					.requestMatchers("/api/vehiculo-persona/conductores/pueden-operar").permitAll() //OK
+					.requestMatchers("/persona/**").hasRole("ADMIN") //OK
+					.requestMatchers("/usuario/**").hasRole("ADMIN") //OK
+					.requestMatchers("/api/vehiculos/**").hasRole("ADMIN") //OK
+					.requestMatchers("/api/vehiculo-persona/**").hasRole("ADMIN") //OK
 					.anyRequest().authenticated())
 			.addFilterAfter(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class);
 		return http.build();

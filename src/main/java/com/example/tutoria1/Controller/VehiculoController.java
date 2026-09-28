@@ -119,20 +119,29 @@ public class VehiculoController {
     @PostMapping("/{vehiculoId}/documentos")
     public ResponseEntity<Object> agregarDocumentos(
             @PathVariable Long vehiculoId,
-            @RequestBody VehiculoDocumentoRequestDto documentoRequest
+            @RequestBody List<VehiculoDocumentoRequestDto> documentosRequest
     ) {
 
-        VehiculoDocumentoModel documento = vehiculoService.agregarDocumento(
+        if (documentosRequest == null || documentosRequest.isEmpty()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Debes enviar al menos un documento"
+            );
+        }
+
+        List<VehiculoDocumentoModel> documentos = vehiculoService.agregarDocumentos(
                 vehiculoId,
-                convertirDocumentoAModelo(documentoRequest)
+                documentosRequest
         );
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(
                         new ApiResponseDTO<>(
-                                "Documento asociado al vehículo correctamente",
-                                convertirDocumentoAResponse(documento)
+                                "Documentos asociados al vehículo correctamente",
+                                documentos.stream()
+                                        .map(this::convertirDocumentoAResponse)
+                                        .collect(Collectors.toList())
                         )
                 );
     }
@@ -228,7 +237,10 @@ public class VehiculoController {
         List<VehiculoModel> vehiculos = vehiculoService.consultarVehiculosPorEstadoDocumento("VENCIDO");
 
         if (vehiculos.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encuentran vehículos con documentos vencidos");
+                throw new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "No se encuentran vehículos con documentos vencidos"
+                );
         }
 
         return ResponseEntity.ok(vehiculos.stream()
@@ -281,12 +293,20 @@ public class VehiculoController {
         vehiculoDocumento.setFechaExpedicion(dto.getFechaExpedicion());
         vehiculoDocumento.setFechaVencimiento(dto.getFechaVencimiento());
 
-        if (dto.getArchivoPdfBase64() != null
-                && !dto.getArchivoPdfBase64().isBlank()) {
+        String base64Pdf = dto.getArchivoBase64();
+        if ((base64Pdf == null || base64Pdf.isBlank()) && dto.getArchivoPdfBase64() != null) {
+            base64Pdf = dto.getArchivoPdfBase64();
+        }
+
+        if (base64Pdf != null && !base64Pdf.isBlank()) {
+            String limpio = base64Pdf
+                    .replace("data:application/pdf;base64,", "")
+                    .replace("data:application/octet-stream;base64,", "")
+                    .trim();
 
             try {
                 byte[] archivoPdf = Base64.getDecoder()
-                        .decode(dto.getArchivoPdfBase64());
+                        .decode(limpio);
 
                 vehiculoDocumento.setArchivoPdf(archivoPdf);
             } catch (IllegalArgumentException exception) {
@@ -353,12 +373,15 @@ public class VehiculoController {
         dto.setFechaExpedicion(modelo.getFechaExpedicion());
         dto.setFechaVencimiento(modelo.getFechaVencimiento());
         dto.setEstadoDocumento(modelo.getEstadoDocumento());
+        dto.setArchivoBase64(modelo.getArchivoBase64());
 
         if (modelo.getArchivoPdf() != null) {
             String archivoPdfBase64 = Base64.getEncoder()
                     .encodeToString(modelo.getArchivoPdf());
 
             dto.setArchivoPdfBase64(archivoPdfBase64);
+        } else if (modelo.getArchivoBase64() != null && !modelo.getArchivoBase64().isBlank()) {
+            dto.setArchivoPdfBase64(modelo.getArchivoBase64());
         }
 
         return dto;

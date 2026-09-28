@@ -198,6 +198,12 @@ public class VehiculoServiceImpl implements VehiculoService {
 
         validarBase64Pdf(vehiculoDocumento.getArchivoBase64());
 
+        String limpio = vehiculoDocumento.getArchivoBase64()
+                .replace("data:application/pdf;base64,", "")
+                .replace("data:application/octet-stream;base64,", "")
+                .trim();
+        vehiculoDocumento.setArchivoPdf(Base64.getDecoder().decode(limpio));
+
         DocumentoModel documento = documentoRepository.findById(
                 vehiculoDocumento.getDocumento().getId())
                 .orElseThrow(() -> new IllegalArgumentException("El documento no existe"));

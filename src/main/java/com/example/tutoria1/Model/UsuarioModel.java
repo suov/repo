@@ -33,6 +33,6 @@ public class UsuarioModel {
     @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "apikey", nullable = false, unique = true, updatable = false)
+    @Column(name = "apikey", nullable = false, unique = true)
     private String apikey;
 }
