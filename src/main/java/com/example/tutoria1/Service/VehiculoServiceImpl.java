@@ -12,12 +12,14 @@ import org.springframework.web.server.ResponseStatusException;
 import com.example.tutoria1.Dto.VehiculoDocumento.Request.VehiculoDocumentoRequestDto;
 import com.example.tutoria1.Enums.Vehiculo.TipoVehiculo;
 import com.example.tutoria1.Enums.VehiculoDocumento.VehiculoDocumentoStatus;
+import com.example.tutoria1.Enums.VehiculoPersona.EstadoConductor;
 import com.example.tutoria1.Model.DocumentoModel;
 import com.example.tutoria1.Model.VehiculoDocumentoModel;
 import com.example.tutoria1.Model.VehiculoModel;
 import com.example.tutoria1.Service.interfaces.VehiculoService;
 import com.example.tutoria1.repository.DocumentoRepository;
 import com.example.tutoria1.repository.VehiculoDocumentoRepository;
+import com.example.tutoria1.repository.VehiculoPersonaRepository;
 import com.example.tutoria1.repository.VehiculoRepository;
 
 @Service
@@ -26,15 +28,17 @@ public class VehiculoServiceImpl implements VehiculoService {
     private final DocumentoRepository documentoRepository;
     private final VehiculoRepository vehiculoRepository;
     private final VehiculoDocumentoRepository vehiculoDocumentoRepository;
+    private final VehiculoPersonaRepository vehiculoPersonaRepository;
 
     public VehiculoServiceImpl(
-        VehiculoRepository vehiculoRepository,
-        DocumentoRepository documentoRepository,
-        VehiculoDocumentoRepository vehiculoDocumentoRepository
-    ) {
+            VehiculoRepository vehiculoRepository,
+            DocumentoRepository documentoRepository,
+            VehiculoDocumentoRepository vehiculoDocumentoRepository,
+            VehiculoPersonaRepository vehiculoPersonaRepository) {
         this.vehiculoRepository = vehiculoRepository;
         this.documentoRepository = documentoRepository;
         this.vehiculoDocumentoRepository = vehiculoDocumentoRepository;
+        this.vehiculoPersonaRepository = vehiculoPersonaRepository;
     }
 
     @Override
@@ -56,16 +60,18 @@ public class VehiculoServiceImpl implements VehiculoService {
             throw new IllegalArgumentException("La placa ya está registrada");
         }
 
-        /* Creación de relación entre vehiculo y documentos ---------------------------*/
-        for (VehiculoDocumentoModel vehiculoDocumento : vehiculo.getDocumentos()){
-            if (vehiculoDocumento.getDocumento() == null || vehiculoDocumento.getDocumento().getId() == null){
+        /*
+         * Creación de relación entre vehiculo y documentos ---------------------------
+         */
+        for (VehiculoDocumentoModel vehiculoDocumento : vehiculo.getDocumentos()) {
+            if (vehiculoDocumento.getDocumento() == null || vehiculoDocumento.getDocumento().getId() == null) {
                 throw new IllegalArgumentException("Cada documento debe tener un id");
             }
-    
+
             DocumentoModel documento = documentoRepository
-                .findById(vehiculoDocumento.getDocumento().getId())
-                .orElseThrow(() -> new IllegalArgumentException("El documento no existe"));
-            
+                    .findById(vehiculoDocumento.getDocumento().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("El documento no existe"));
+
             vehiculoDocumento.setVehiculo(vehiculo);
             vehiculoDocumento.setDocumento(documento);
             vehiculoDocumento.setEstadoDocumento(VehiculoDocumentoStatus.EN_VERIFICACION);
@@ -203,9 +209,9 @@ public class VehiculoServiceImpl implements VehiculoService {
                 .orElseThrow(() -> new IllegalArgumentException("El documento no existe"));
 
         if (vehiculoDocumento.getFechaExpedicion() == null
-            || vehiculoDocumento.getFechaVencimiento() == null
-            || vehiculoDocumento.getFechaVencimiento()
-                .isBefore(vehiculoDocumento.getFechaExpedicion())) {
+                || vehiculoDocumento.getFechaVencimiento() == null
+                || vehiculoDocumento.getFechaVencimiento()
+                        .isBefore(vehiculoDocumento.getFechaExpedicion())) {
             throw new IllegalArgumentException("Las fechas del documento son obligatorias");
         }
 
@@ -219,8 +225,7 @@ public class VehiculoServiceImpl implements VehiculoService {
     @Override
     public List<VehiculoDocumentoModel> agregarDocumentos(
             Long vehiculoId,
-            List<VehiculoDocumentoRequestDto> documentosRequest
-        ) {
+            List<VehiculoDocumentoRequestDto> documentosRequest) {
 
         if (documentosRequest == null || documentosRequest.isEmpty()) {
             throw new IllegalArgumentException("Debes enviar al menos un documento");
@@ -277,11 +282,11 @@ public class VehiculoServiceImpl implements VehiculoService {
 
     @Override
     public List<VehiculoModel> consultarVehiculosPorEstadoDocumento(String estadoDocumento) {
-        
-        try{
+
+        try {
             VehiculoDocumentoStatus estado = VehiculoDocumentoStatus.valueOf(estadoDocumento.trim().toUpperCase());
             return vehiculoRepository.findDistinctByDocumentosEstadoDocumento(estado);
-        } catch (IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             return List.of();
         }
     }

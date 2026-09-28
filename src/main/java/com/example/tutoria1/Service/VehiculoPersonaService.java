@@ -24,140 +24,132 @@ import lombok.RequiredArgsConstructor;
 @Transactional
 public class VehiculoPersonaService implements IVehiculoPersonaService {
 
-    private final VehiculoPersonaRepository vehiculoPersonaRepository;
-    private final VehiculoRepository vehiculoRepository;
-    private final PersonaRepository personaRepository;
+        private final VehiculoPersonaRepository vehiculoPersonaRepository;
+        private final VehiculoRepository vehiculoRepository;
+        private final PersonaRepository personaRepository;
 
-    @Override
-    public VehiculoPersonaResponseDto crearAsociacion(
-            VehiculoPersonaRequestDto requestDto
-    ) {
-        VehiculoModel vehiculo = vehiculoRepository
-                .findById(requestDto.getIdVehiculo())
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "No existe un vehículo con el ID indicado"
-                ));
+        @Override
+        public VehiculoPersonaResponseDto crearAsociacion(
+                        VehiculoPersonaRequestDto requestDto) {
+                VehiculoModel vehiculo = vehiculoRepository
+                                .findById(requestDto.getIdVehiculo())
+                                .orElseThrow(() -> new IllegalArgumentException(
+                                                "No existe un vehículo con el ID indicado"));
 
-        PersonaModel persona = personaRepository
-                .findById(requestDto.getIdPersona())
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "No existe una persona con el ID indicado"
-                ));
+                PersonaModel persona = personaRepository
+                                .findById(requestDto.getIdPersona())
+                                .orElseThrow(() -> new IllegalArgumentException(
+                                                "No existe una persona con el ID indicado"));
 
-        if (persona.getTipoPersona() != TipoPersona.C) {
-            throw new IllegalArgumentException(
-                    "La persona debe tener tipo C (Conductor)"
-            );
+                if (persona.getTipoPersona() != TipoPersona.C) {
+                        throw new IllegalArgumentException(
+                                        "La persona debe tener tipo C (Conductor)");
+                }
+
+                if (vehiculoPersonaRepository.existsByVehiculoIdAndPersonaId(
+                                vehiculo.getId(),
+                                persona.getId())) {
+                        throw new IllegalArgumentException(
+                                        "Esta persona ya está asociada al vehículo");
+                }
+
+                if (vehiculoPersonaRepository.countByVehiculoId(
+                                vehiculo.getId()) >= 5) {
+                        throw new IllegalStateException(
+                                        "Un vehículo no puede tener más de 5 conductores");
+                }
+
+                VehiculoPersonaModel asociacion = new VehiculoPersonaModel();
+
+                asociacion.setVehiculo(vehiculo);
+                asociacion.setPersona(persona);
+                asociacion.setFechaAsociacion(requestDto.getFechaAsociacion());
+                asociacion.setEstadoConductor(requestDto.getEstadoConductor());
+
+                VehiculoPersonaModel asociacionGuardada = vehiculoPersonaRepository.save(asociacion);
+
+                return convertirAResponse(asociacionGuardada);
         }
 
-        if (vehiculoPersonaRepository.existsByVehiculoIdAndPersonaId(
-                vehiculo.getId(),
-                persona.getId()
-        )) {
-            throw new IllegalArgumentException(
-                    "Esta persona ya está asociada al vehículo"
-            );
+        @Override
+        @Transactional(readOnly = true)
+        public List<VehiculoPersonaResponseDto> listarTodos() {
+                return vehiculoPersonaRepository.findAll()
+                                .stream()
+                                .map(this::convertirAResponse)
+                                .toList();
         }
 
-        if (vehiculoPersonaRepository.countByVehiculoId(
-                vehiculo.getId()
-        ) >= 5) {
-            throw new IllegalStateException(
-                    "Un vehículo no puede tener más de 5 conductores"
-            );
+        @Override
+        @Transactional(readOnly = true)
+        public List<VehiculoPersonaResponseDto> listarPorVehiculo(
+                        Long idVehiculo) {
+                if (!vehiculoRepository.existsById(idVehiculo)) {
+                        throw new IllegalArgumentException(
+                                        "No existe un vehículo con el ID indicado");
+                }
+
+                return vehiculoPersonaRepository.findByVehiculoId(idVehiculo)
+                                .stream()
+                                .map(this::convertirAResponse)
+                                .toList();
         }
 
-        VehiculoPersonaModel asociacion = new VehiculoPersonaModel();
+        @Override
+        public VehiculoPersonaResponseDto actualizarEstado(
+                        Long idAsociacion,
+                        EstadoConductor estadoConductor) {
+                VehiculoPersonaModel asociacion = vehiculoPersonaRepository
+                                .findById(idAsociacion)
+                                .orElseThrow(() -> new IllegalArgumentException(
+                                                "No existe la asociación indicada"));
 
-        asociacion.setVehiculo(vehiculo);
-        asociacion.setPersona(persona);
-        asociacion.setFechaAsociacion(requestDto.getFechaAsociacion());
-        asociacion.setEstadoConductor(requestDto.getEstadoConductor());
+                asociacion.setEstadoConductor(estadoConductor);
 
-        VehiculoPersonaModel asociacionGuardada =
-                vehiculoPersonaRepository.save(asociacion);
+                VehiculoPersonaModel asociacionActualizada = vehiculoPersonaRepository.save(asociacion);
 
-        return convertirAResponse(asociacionGuardada);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<VehiculoPersonaResponseDto> listarTodos() {
-        return vehiculoPersonaRepository.findAll()
-                .stream()
-                .map(this::convertirAResponse)
-                .toList();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<VehiculoPersonaResponseDto> listarPorVehiculo(
-            Long idVehiculo
-    ) {
-        if (!vehiculoRepository.existsById(idVehiculo)) {
-            throw new IllegalArgumentException(
-                    "No existe un vehículo con el ID indicado"
-            );
+                return convertirAResponse(asociacionActualizada);
         }
 
-        return vehiculoPersonaRepository.findByVehiculoId(idVehiculo)
-                .stream()
-                .map(this::convertirAResponse)
-                .toList();
-    }
+        @Override
+        public void eliminarAsociacion(Long idAsociacion) {
+                VehiculoPersonaModel asociacion = vehiculoPersonaRepository
+                                .findById(idAsociacion)
+                                .orElseThrow(() -> new IllegalArgumentException(
+                                                "No existe la asociación indicada"));
 
-    @Override
-    public VehiculoPersonaResponseDto actualizarEstado(
-            Long idAsociacion,
-            EstadoConductor estadoConductor
-    ) {
-        VehiculoPersonaModel asociacion = vehiculoPersonaRepository
-                .findById(idAsociacion)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "No existe la asociación indicada"
-                ));
+                long cantidadConductores = vehiculoPersonaRepository
+                                .countByVehiculoId(asociacion.getVehiculo().getId());
 
-        asociacion.setEstadoConductor(estadoConductor);
+                if (cantidadConductores <= 1) {
+                        throw new IllegalStateException(
+                                        "No se puede eliminar el último conductor del vehículo");
+                }
 
-        VehiculoPersonaModel asociacionActualizada =
-                vehiculoPersonaRepository.save(asociacion);
-
-        return convertirAResponse(asociacionActualizada);
-    }
-
-    @Override
-    public void eliminarAsociacion(Long idAsociacion) {
-        VehiculoPersonaModel asociacion = vehiculoPersonaRepository
-                .findById(idAsociacion)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "No existe la asociación indicada"
-                ));
-
-        long cantidadConductores = vehiculoPersonaRepository
-                .countByVehiculoId(asociacion.getVehiculo().getId());
-
-        if (cantidadConductores <= 1) {
-            throw new IllegalStateException(
-                    "No se puede eliminar el último conductor del vehículo"
-            );
+                vehiculoPersonaRepository.delete(asociacion);
         }
 
-        vehiculoPersonaRepository.delete(asociacion);
-    }
+        // Asociar vehículos por capacidad de operar de un conductor
+        @Override
+        public List<VehiculoModel> asociarVehiculosPorCapacidadConductor(Long idConductor) {
+                try {
+                        return vehiculoPersonaRepository.asociarVehiculosPorCapacidadConductor(idConductor);
+                } catch (IllegalArgumentException e) {
+                        return List.of();
+                }
+        }
 
-    private VehiculoPersonaResponseDto convertirAResponse(
-            VehiculoPersonaModel asociacion
-    ) {
-        return new VehiculoPersonaResponseDto(
-                asociacion.getId(),
-                asociacion.getVehiculo().getId(),
-                asociacion.getVehiculo().getPlaca(),
-                asociacion.getPersona().getId(),
-                asociacion.getPersona().getNombre()
-                        + " "
-                        + asociacion.getPersona().getApellido(),
-                asociacion.getFechaAsociacion(),
-                asociacion.getEstadoConductor()
-        );
-    }
+        private VehiculoPersonaResponseDto convertirAResponse(
+                        VehiculoPersonaModel asociacion) {
+                return new VehiculoPersonaResponseDto(
+                                asociacion.getId(),
+                                asociacion.getVehiculo().getId(),
+                                asociacion.getVehiculo().getPlaca(),
+                                asociacion.getPersona().getId(),
+                                asociacion.getPersona().getNombre()
+                                                + " "
+                                                + asociacion.getPersona().getApellido(),
+                                asociacion.getFechaAsociacion(),
+                                asociacion.getEstadoConductor());
+        }
 }
