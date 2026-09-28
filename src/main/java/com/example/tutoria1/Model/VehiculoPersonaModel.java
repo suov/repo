@@ -51,6 +51,9 @@ public class VehiculoPersonaModel {
     @Column(name = "fecha_asociacion", nullable = false)
     private LocalDate fechaAsociacion;
 
+    /* PO - Puede Operar
+    ** EA - Espera de Aprobación
+    ** RO - Restringido para Operar */
     @Enumerated(EnumType.STRING)
     @Column(name = "estado_conductor", nullable = false, length = 2)
     private EstadoConductor estadoConductor;
