@@ -202,6 +202,7 @@ public class VehiculoServiceImpl implements VehiculoService {
                 .replace("data:application/pdf;base64,", "")
                 .replace("data:application/octet-stream;base64,", "")
                 .trim();
+
         vehiculoDocumento.setArchivoPdf(Base64.getDecoder().decode(limpio));
 
         DocumentoModel documento = documentoRepository.findById(
@@ -226,7 +227,7 @@ public class VehiculoServiceImpl implements VehiculoService {
     public List<VehiculoDocumentoModel> agregarDocumentos(
             Long vehiculoId,
             List<VehiculoDocumentoRequestDto> documentosRequest
-        ) {
+    ) {
 
         if (documentosRequest == null || documentosRequest.isEmpty()) {
             throw new IllegalArgumentException("Debes enviar al menos un documento");
