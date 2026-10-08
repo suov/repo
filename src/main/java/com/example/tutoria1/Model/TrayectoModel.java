@@ -22,21 +22,11 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(
-        name = "trayectos",
-        uniqueConstraints = {
-                @UniqueConstraint(
-                        name = "uk_trayecto_codigo_ruta_orden",
-                        columnNames = {"codigo_ruta", "orden_parada"}
-                )
-        },
-        check = {
-                @CheckConstraint(
-                        name = "chk_orden_parada",
-                        constraint = "orden_parada >= 0"
-                )
-        }
-)
+@Table(name = "trayectos", uniqueConstraints = {
+        @UniqueConstraint(name = "uk_trayecto_codigo_ruta_orden", columnNames = { "codigo_ruta", "orden_parada" })
+}, check = {
+        @CheckConstraint(name = "chk_orden_parada", constraint = "orden_parada >= 0")
+})
 public class TrayectoModel {
 
     @Id
