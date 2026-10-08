@@ -1,5 +1,8 @@
 package com.example.tutoria1.Model;
 
+import java.math.BigDecimal;
+
+import jakarta.persistence.CheckConstraint;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -10,49 +13,59 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
-import lombok.Cleanup;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "trayecto", uniqueConstraints = {
-        @UniqueConstraint(name = "uk_trayecto", columnNames = { "id_persona", "id_vehiculo" })
-})
+@Entity
+@Table(
+        name = "trayectos",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_trayecto_codigo_ruta_orden",
+                        columnNames = {"codigo_ruta", "orden_parada"}
+                )
+        },
+        check = {
+                @CheckConstraint(
+                        name = "chk_orden_parada",
+                        constraint = "orden_parada >= 0"
+                )
+        }
+)
 public class TrayectoModel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "id_persona", nullable = false)
-    private PersonaModel persona;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "persona_id", nullable = false)
+    private PersonaModel conductor;
 
-    @ManyToOne
-    @JoinColumn(name = "id_vehiculo", nullable = false)
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "vehiculo_id", nullable = false)
     private VehiculoModel vehiculo;
 
-    @Column(name = "cod_ruta", nullable = false)
-    private String CodRuta;
+    @Column(name = "codigo_ruta", nullable = false, length = 50)
+    private String codigoRuta;
 
-    @Column(name = "ubicacion", nullable = false)
+    @Column(name = "ubicacion", nullable = false, length = 255)
     private String ubicacion;
 
     @Column(name = "orden_parada", nullable = false)
     private Integer ordenParada;
 
-    @Column(name = "longitud", nullable = false)
-    private double longitud;
+    @Column(name = "latitud", precision = 10, scale = 7)
+    private BigDecimal latitud;
 
-    @Column(name = "latitud", nullable = false)
-    private double latitud;
+    @Column(name = "longitud", precision = 10, scale = 7)
+    private BigDecimal longitud;
 
-    @Column(name = "login", nullable = false)
-    private String login;
-
+    @Column(name = "login_usuario", nullable = false, length = 100)
+    private String loginUsuario;
 }

@@ -1,0 +1,194 @@
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap");
+
+:root {
+    --azul-oscuro: #092749;
+    --azul: #0e5b9c;
+    --celeste: #dff4ff;
+    --verde: #20b486;
+    --texto: #1c2938;
+    --texto-suave: #667085;
+    --borde: #e5eaf0;
+    --fondo: #f3f7fb;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: "Manrope", Arial, sans-serif;
+    color: var(--texto);
+    background:
+        radial-gradient(circle at 8% 3%, #d1efff 0, transparent 25%),
+        radial-gradient(circle at 95% 18%, #d5f8ee 0, transparent 22%),
+        var(--fondo);
+}
+
+header {
+    padding: 42px 8%;
+    color: white;
+    background:
+        linear-gradient(120deg, rgba(9, 39, 73, 0.97), rgba(14, 91, 156, 0.92)),
+        var(--azul-oscuro);
+    box-shadow: 0 5px 18px rgba(9, 39, 73, 0.2);
+}
+
+header h1 {
+    max-width: 1200px;
+    margin: 0 auto 8px;
+    font-size: clamp(28px, 4vw, 40px);
+    letter-spacing: -1.5px;
+}
+
+header p {
+    max-width: 1200px;
+    margin: auto;
+    color: #d9eeff;
+    font-size: 16px;
+}
+
+main {
+    width: min(1200px, 90%);
+    margin: 34px auto 50px;
+}
+
+.panel-consulta {
+    padding: 26px;
+    margin-bottom: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 10px 30px rgba(31, 54, 79, 0.1);
+}
+
+label {
+    display: block;
+    margin-bottom: 10px;
+    color: var(--azul-oscuro);
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.fila-consulta {
+    display: flex;
+    gap: 12px;
+}
+
+input {
+    flex: 1;
+    min-width: 0;
+    padding: 14px 16px;
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    outline: none;
+    color: var(--texto);
+    background: #fbfdff;
+    font: inherit;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input:focus {
+    border-color: var(--azul);
+    box-shadow: 0 0 0 4px rgba(14, 91, 156, 0.12);
+}
+
+button {
+    padding: 14px 20px;
+    border: 0;
+    border-radius: 10px;
+    color: white;
+    background: linear-gradient(135deg, var(--azul), #1482c8);
+    box-shadow: 0 6px 14px rgba(14, 91, 156, 0.25);
+    font: inherit;
+    font-weight: 800;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 9px 18px rgba(14, 91, 156, 0.32);
+}
+
+#mensaje {
+    min-height: 20px;
+    margin: 14px 0 0;
+    color: #c2410c;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.contenedor-ruta {
+    display: grid;
+    grid-template-columns: minmax(260px, 0.85fr) minmax(0, 2fr);
+    gap: 24px;
+}
+
+.panel-paradas,
+#mapa {
+    overflow: hidden;
+    border: 1px solid rgba(229, 234, 240, 0.9);
+    border-radius: 18px;
+    background: white;
+    box-shadow: 0 10px 30px rgba(31, 54, 79, 0.1);
+}
+
+.panel-paradas {
+    padding: 26px;
+}
+
+.panel-paradas h2 {
+    margin: 0 0 22px;
+    color: var(--azul-oscuro);
+    font-size: 21px;
+}
+
+#listaParadas {
+    margin: 0;
+    padding-left: 24px;
+}
+
+#listaParadas li {
+    padding: 0 0 16px 8px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #eef2f6;
+    color: var(--texto-suave);
+    font-size: 14px;
+    line-height: 1.55;
+}
+
+#listaParadas li::marker {
+    color: var(--verde);
+    font-weight: 800;
+}
+
+#mapa {
+    height: 520px;
+}
+
+@media (max-width: 768px) {
+    header {
+        padding: 32px 5%;
+    }
+
+    main {
+        width: 92%;
+        margin-top: 22px;
+    }
+
+    .fila-consulta,
+    .contenedor-ruta {
+        grid-template-columns: 1fr;
+        flex-direction: column;
+    }
+
+    button {
+        width: 100%;
+    }
+
+    #mapa {
+        height: 390px;
+    }
+}
