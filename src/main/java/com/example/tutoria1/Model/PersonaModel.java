@@ -1,5 +1,8 @@
 package com.example.tutoria1.Model;
 
+import java.sql.Blob;
+import java.time.LocalDate;
+
 import com.example.tutoria1.Enums.Persona.TipoDocumento;
 import com.example.tutoria1.Enums.Persona.TipoPersona;
 
@@ -22,30 +25,22 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(
-    name = "persona", 
-    check = {
-        @CheckConstraint(
-            name = "chk_tipo_persona", 
-            constraint = "tipo_persona IN('C', 'A')"
-        ),
-        @CheckConstraint(
-            name = "chk_tipo_documento", 
-            constraint = "tipo_documento IN('CC')"
-        )
-    })
+@Table(name = "persona", check = {
+        @CheckConstraint(name = "chk_tipo_persona", constraint = "tipo_persona IN('C', 'A')"),
+        @CheckConstraint(name = "chk_tipo_documento", constraint = "tipo_documento IN('CC')")
+})
 public class PersonaModel {
 
-    //Identificador de persona (Primary Key)
+    // Identificador de persona (Primary Key)
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    //Identificación de la persona
+    // Identificación de la persona
     @Column(name = "numero_documento", unique = true, nullable = false)
     private String documento;
 
-    //Tipo de identificación - CC
+    // Tipo de identificación - CC
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo_documento", nullable = false)
     private TipoDocumento tipoDocumento;
@@ -59,10 +54,20 @@ public class PersonaModel {
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-    /* C- Conductor
-    ** A- Administrativo */
+    /*
+     * C- Conductor
+     ** A- Administrativo
+     */
     @Column(name = "tipo_persona")
     @Enumerated(EnumType.STRING)
     private TipoPersona tipoPersona;
+
+    // Licencia de conducción del conductor
+    @Column(name = "Lic_Conduccion")
+    private Blob licConduccion;
+
+    // Fecha de vencimiento de licencia de conducción
+    @Column(name = "fecha_vencimiento_lic_conduccion")
+    private LocalDate fechaVencimientoLicConduccion;
 
 }
