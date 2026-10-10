@@ -1,6 +1,5 @@
 package com.example.tutoria1.Model;
 
-import java.sql.Blob;
 import java.time.LocalDate;
 
 import com.example.tutoria1.Enums.Persona.TipoDocumento;
@@ -14,6 +13,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -62,12 +62,13 @@ public class PersonaModel {
     @Enumerated(EnumType.STRING)
     private TipoPersona tipoPersona;
 
-    // Licencia de conducción del conductor
-    @Column(name = "Lic_Conduccion")
-    private Blob licConduccion;
+    // Licencia de conducción almacenada como bytes del documento.
+    @Lob
+    @Column(name = "licencia_conduccion", columnDefinition = "LONGBLOB")
+    private byte[] licenciaConduccion;
 
-    // Fecha de vencimiento de licencia de conducción
-    @Column(name = "fecha_vencimiento_lic_conduccion")
-    private LocalDate fechaVencimientoLicConduccion;
+    // Fecha hasta la que está vigente la licencia de conducción.
+    @Column(name = "fecha_vigencia_licencia")
+    private LocalDate fechaVigenciaLicencia;
 
 }

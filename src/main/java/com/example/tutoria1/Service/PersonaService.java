@@ -31,6 +31,8 @@ public class PersonaService implements IPersonaService {
     @Override
     public PersonaModel crearPersona(PersonaModel persona) {
 
+        validarLicenciaConduccion(persona);
+
         if(persona.getNombre() == null
             || persona.getApellido() == null
             || persona.getDocumento() == null
@@ -72,6 +74,10 @@ public class PersonaService implements IPersonaService {
     @Override
     public PersonaModel actualizarPersona(PersonaModel persona, Long id) {
 
+        if (persona == null) {
+            throw new IllegalArgumentException("La información de la persona es obligatoria");
+        }
+
         if (id == null || id <= 0) {
             throw new IllegalArgumentException("Ingrese un Id valido para realizar la busqueda");
         }
@@ -82,14 +88,57 @@ public class PersonaService implements IPersonaService {
 
         return personaRepository.findById(id)
                 .map(personaActualizado -> {
+                    if (persona.getTipoPersona() == TipoPersona.C) {
+                        if (persona.getLicenciaConduccion() != null) {
+                            personaActualizado.setLicenciaConduccion(
+                                    persona.getLicenciaConduccion()
+                            );
+                        }
+                        if (persona.getFechaVigenciaLicencia() != null) {
+                            personaActualizado.setFechaVigenciaLicencia(
+                                    persona.getFechaVigenciaLicencia()
+                            );
+                        }
+                    } else {
+                        validarLicenciaConduccion(persona);
+                        personaActualizado.setLicenciaConduccion(null);
+                        personaActualizado.setFechaVigenciaLicencia(null);
+                    }
+
                     personaActualizado.setNombre(persona.getNombre());
                     personaActualizado.setApellido(persona.getApellido());
                     personaActualizado.setEmail(persona.getEmail());
                     personaActualizado.setTipoDocumento(persona.getTipoDocumento());
                     personaActualizado.setTipoPersona(persona.getTipoPersona());
+                    validarLicenciaConduccion(personaActualizado);
                     return personaRepository.save(personaActualizado);
                 }).orElseThrow(
                         () -> new RuntimeException("Usuario No encontrado con ID: " + id));
+    }
+
+    private void validarLicenciaConduccion(PersonaModel persona) {
+        if (persona == null) {
+            throw new IllegalArgumentException("La persona es obligatoria");
+        }
+
+        if (persona.getTipoPersona() == TipoPersona.C) {
+            if (persona.getLicenciaConduccion() == null
+                    || persona.getLicenciaConduccion().length == 0) {
+                throw new IllegalArgumentException(
+                        "La licencia de conducción en Base64 es obligatoria para conductores"
+                );
+            }
+            if (persona.getFechaVigenciaLicencia() == null) {
+                throw new IllegalArgumentException(
+                        "La fecha de vigencia de la licencia es obligatoria para conductores"
+                );
+            }
+        } else if (persona.getLicenciaConduccion() != null
+                || persona.getFechaVigenciaLicencia() != null) {
+            throw new IllegalArgumentException(
+                    "La licencia y su fecha de vigencia solo aplican a personas tipo conductor"
+            );
+        }
     }
 
     /* Complemento */

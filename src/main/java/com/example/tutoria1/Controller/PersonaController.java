@@ -1,5 +1,6 @@
 package com.example.tutoria1.Controller;
 
+import java.util.Base64;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -100,6 +101,20 @@ public class PersonaController {
         persona.setTipoDocumento(dto.getTipoDocumento());
         persona.setEmail(dto.getEmail());
         persona.setTipoPersona(dto.getTipoPersona());
+
+        if (dto.getLicenciaConduccionBase64() != null
+                && !dto.getLicenciaConduccionBase64().isBlank()) {
+            try {
+                persona.setLicenciaConduccion(
+                        Base64.getDecoder().decode(dto.getLicenciaConduccionBase64().trim())
+                );
+            } catch (IllegalArgumentException exception) {
+                throw new IllegalArgumentException(
+                        "La licencia de conducción no contiene un Base64 válido"
+                );
+            }
+        }
+        persona.setFechaVigenciaLicencia(dto.getFechaVigenciaLicencia());
         return persona;
     }
 
@@ -117,6 +132,12 @@ public class PersonaController {
         dto.setTipoPersona(persona.getTipoPersona());
         dto.setTipoDocumento(persona.getTipoDocumento());
         dto.setDocumento(persona.getDocumento());
+        if (persona.getLicenciaConduccion() != null) {
+            dto.setLicenciaConduccionBase64(
+                    Base64.getEncoder().encodeToString(persona.getLicenciaConduccion())
+            );
+        }
+        dto.setFechaVigenciaLicencia(persona.getFechaVigenciaLicencia());
         return dto;
     }
 }

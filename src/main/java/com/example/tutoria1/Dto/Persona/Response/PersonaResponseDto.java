@@ -1,5 +1,7 @@
 package com.example.tutoria1.Dto.Persona.Response;
 
+import java.time.LocalDate;
+
 import com.example.tutoria1.Enums.Persona.TipoDocumento;
 import com.example.tutoria1.Enums.Persona.TipoPersona;
 
@@ -17,4 +19,6 @@ public class PersonaResponseDto {
     private String apellido;
     private String email;
     private TipoPersona tipoPersona;
+    private String licenciaConduccionBase64;
+    private LocalDate fechaVigenciaLicencia;
 }
