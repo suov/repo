@@ -10,9 +10,12 @@ import org.springframework.web.server.ResponseStatusException;
 import com.example.tutoria1.Dto.Trayecto.Request.TrayectoRequestDto;
 import com.example.tutoria1.Dto.Trayecto.Response.TrayectoResponseDto;
 import com.example.tutoria1.Enums.VehiculoDocumento.VehiculoDocumentoStatus;
+import com.example.tutoria1.Enums.VehiculoPersona.EstadoConductor;
 import com.example.tutoria1.Model.PersonaModel;
 import com.example.tutoria1.Model.TrayectoModel;
+import com.example.tutoria1.Model.VehiculoDocumentoModel;
 import com.example.tutoria1.Model.VehiculoModel;
+import com.example.tutoria1.Model.VehiculoPersonaModel;
 import com.example.tutoria1.Service.interfaces.TrayectoService;
 import com.example.tutoria1.repository.PersonaRepository;
 import com.example.tutoria1.repository.TrayectoRepository;
@@ -48,14 +51,14 @@ public class TrayectoServiceImpl implements TrayectoService {
                 .findById(request.getConductorId())
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
-                        "Conductor no encontrado"
+                        "ERROR: Conductor no encontrado"
                 ));
 
         VehiculoModel vehiculo = vehiculoRepository
                 .findById(request.getVehiculoId())
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
-                        "Vehículo no encontrado"
+                        "ERROR: Vehículo no encontrado"
                 ));
 
         validarQueSeaConductor(conductor);
@@ -87,7 +90,7 @@ public class TrayectoServiceImpl implements TrayectoService {
 
         if (codigoRuta == null || codigoRuta.isBlank()) {
             throw new IllegalArgumentException(
-                    "El código de ruta es obligatorio"
+                    "ERROR: El código de ruta es obligatorio"
             );
         }
 
@@ -99,7 +102,7 @@ public class TrayectoServiceImpl implements TrayectoService {
         if (trayectos.isEmpty()) {
             throw new ResponseStatusException(
                     HttpStatus.NOT_FOUND,
-                    "No se encontraron paradas para la ruta indicada"
+                    "ERROR: No se encontraron paradas para la ruta indicada"
             );
         }
 
@@ -108,44 +111,46 @@ public class TrayectoServiceImpl implements TrayectoService {
                 .toList();
     }
 
+    /* -------------------------------COMPLEMENTARIOS------------------------------- */
+
     private void validarRequest(TrayectoRequestDto request) {
 
         if (request == null) {
             throw new IllegalArgumentException(
-                    "La información del trayecto es obligatoria"
+                    "ERROR: La información del trayecto es obligatoria"
             );
         }
 
         if (request.getConductorId() == null) {
             throw new IllegalArgumentException(
-                    "El conductor es obligatorio"
+                    "ERROR: El conductor es obligatorio"
             );
         }
 
         if (request.getVehiculoId() == null) {
             throw new IllegalArgumentException(
-                    "El vehículo es obligatorio"
+                    "ERROR: El vehículo es obligatorio"
             );
         }
 
         if (request.getCodigoRuta() == null
                 || request.getCodigoRuta().isBlank()) {
             throw new IllegalArgumentException(
-                    "El código de ruta es obligatorio"
+                    "ERROR: El código de ruta es obligatorio"
             );
         }
 
         if (request.getUbicacion() == null
                 || request.getUbicacion().isBlank()) {
             throw new IllegalArgumentException(
-                    "La ubicación de la parada es obligatoria"
+                    "ERROR: La ubicación de la parada es obligatoria"
             );
         }
 
         if (request.getOrdenParada() == null
                 || request.getOrdenParada() < 0) {
             throw new IllegalArgumentException(
-                    "El orden de parada debe ser cero o mayor"
+                    "ERROR: El orden de parada debe ser cero o mayor"
             );
         }
     }
@@ -161,26 +166,28 @@ public class TrayectoServiceImpl implements TrayectoService {
     }
 
     private void validarRelacionConductorVehiculo(
-            PersonaModel conductor,
+            PersonaModel persona,
             VehiculoModel vehiculo
     ) {
 
-        boolean relacionActiva = vehiculo.getConductores() != null
-                && vehiculo.getConductores().stream()
-                .anyMatch(asociacion ->
-                        asociacion.getPersona() != null
-                        && asociacion.getPersona().getId()
-                                .equals(conductor.getId())
-                        && asociacion.getEstadoConductor() != null
-                        && "PO".equals(
-                                asociacion.getEstadoConductor().name()
-                        )
-                );
+        List<VehiculoPersonaModel> conductores = vehiculo.getConductores();
 
-        if (!relacionActiva) {
+        if (conductores == null || conductores.isEmpty()) {
             throw new IllegalArgumentException(
-                    "El conductor no tiene una relación activa (PO) con el vehículo"
+                    "ERROR: El vehiculo asociado no contiene conductores."
             );
+        }
+
+        for (VehiculoPersonaModel conductor : conductores) {
+            if (conductor.getId().equals(persona.getId())) {
+                if (conductor.getEstadoConductor() != EstadoConductor.PO) {
+                    throw new IllegalArgumentException(
+                            "ERROR: La relación del Vehiculo: "
+                                    + vehiculo.getPlaca() + ", con el conductor: "
+                                    + persona.getNombre() + ", no esta disponible para operar."
+                    );
+                }
+            }
         }
     }
 
@@ -188,24 +195,22 @@ public class TrayectoServiceImpl implements TrayectoService {
             VehiculoModel vehiculo
     ) {
 
-        if (vehiculo.getDocumentos() == null
+        if (vehiculo == null || vehiculo.getDocumentos() == null
                 || vehiculo.getDocumentos().isEmpty()) {
+
             throw new IllegalArgumentException(
-                    "El vehículo no tiene documentos registrados"
+                    "ERROR: El vehículo asociado no tiene documentos registrados."
             );
         }
 
-        boolean todosHabilitados = vehiculo.getDocumentos()
-                .stream()
-                .allMatch(documento ->
-                        documento.getEstadoDocumento()
-                                == VehiculoDocumentoStatus.HABILITADO
+        for (VehiculoDocumentoModel documento : vehiculo.getDocumentos()) {
+            if (documento == null
+                    || documento.getEstadoDocumento() != VehiculoDocumentoStatus.HABILITADO) {
+                throw new IllegalArgumentException(
+                        "ERROR: El vehiculo: " + vehiculo.getPlaca()
+                        + ", no puede operar debido a un documento no habilitado."
                 );
-
-        if (!todosHabilitados) {
-            throw new IllegalArgumentException(
-                    "Todos los documentos del vehículo deben estar HABILITADOS"
-            );
+            }
         }
     }
 
@@ -218,9 +223,9 @@ public class TrayectoServiceImpl implements TrayectoService {
         List<TrayectoModel> paradasExistentes = trayectoRepository
                 .findByCodigoRutaOrderByOrdenParadaAsc(codigoRuta);
 
-        if (paradasExistentes.size() >= 7) {
+        if (paradasExistentes.size() > 7) {
             throw new IllegalArgumentException(
-                    "Una ruta permite máximo 7 paradas: inicio, fin y 5 intermedias"
+                    "ERROR: Una ruta permite máximo 7 paradas: inicio, fin y 5 intermedias"
             );
         }
 
@@ -232,7 +237,7 @@ public class TrayectoServiceImpl implements TrayectoService {
 
         if (ordenRepetido) {
             throw new IllegalArgumentException(
-                    "Ya existe una parada con ese orden para esta ruta"
+                    "ERROR: Ya existe una parada con ese orden para esta ruta"
             );
         }
     }
@@ -260,4 +265,5 @@ public class TrayectoServiceImpl implements TrayectoService {
 
         return dto;
     }
+
 }

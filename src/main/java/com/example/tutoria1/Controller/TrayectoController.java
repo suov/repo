@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.tutoria1.Dto.Exception.ApiResponseDTO;
 import com.example.tutoria1.Dto.Trayecto.Request.TrayectoRequestDto;
 import com.example.tutoria1.Dto.Trayecto.Response.TrayectoResponseDto;
 import com.example.tutoria1.Service.interfaces.TrayectoService;
@@ -27,9 +28,9 @@ public class TrayectoController {
     }
 
     @PostMapping
-    public ResponseEntity<TrayectoResponseDto> crearTrayecto(
+    public ResponseEntity<ApiResponseDTO<TrayectoResponseDto>> crearTrayecto(
             @RequestBody TrayectoRequestDto request,
-            Authentication authentication
+            Authentication authentication /* REVISAR */
     ) {
 
         String loginUsuario = authentication.getName();
@@ -39,15 +40,20 @@ public class TrayectoController {
                 loginUsuario
         );
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(respuesta);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(
+                        new ApiResponseDTO<>(
+                                "Trayecto creado correctamente",
+                                respuesta
+                        )
+                );
     }
 
-    @GetMapping("/ruta/{codigoRuta}")
+    @GetMapping({"/ruta", "/ruta/{codigoRuta}"})
     public ResponseEntity<List<TrayectoResponseDto>> consultarRuta(
-            @PathVariable String codigoRuta
+            @PathVariable(required = false) String codigoRuta
     ) {
+        /* Validaciones ya en el service */
 
         return ResponseEntity.ok(
                 trayectoService.consultarRutaPorCodigo(codigoRuta)
