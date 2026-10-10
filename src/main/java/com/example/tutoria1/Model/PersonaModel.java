@@ -67,7 +67,7 @@ public class PersonaModel {
     @Column(name = "licencia_conduccion", columnDefinition = "LONGBLOB")
     private byte[] licenciaConduccion;
 
-    // Fecha hasta la que está vigente la licencia de conducción.
+    // Fecha de vencimiento de la licencia de conducción.
     @Column(name = "fecha_vigencia_licencia")
     private LocalDate fechaVigenciaLicencia;
 
