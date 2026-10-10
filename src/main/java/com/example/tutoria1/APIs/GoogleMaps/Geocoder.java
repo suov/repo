@@ -34,7 +34,7 @@ public class Geocoder {
         String requestUri = GEOCODING_RESOURCE + apiKey + "&input=" + encodedQuery;
         HttpRequest geocodingRequest = HttpRequest.newBuilder().GET().uri(URI.create(requestUri))
                 .timeout(Duration.ofMillis(2000)).build();
-        HttpResponse geocodingResponse = httpClient.send(geocodingRequest,
+        HttpResponse<?> geocodingResponse = httpClient.send(geocodingRequest,
                 HttpResponse.BodyHandlers.ofString());
         return (String) geocodingResponse.body();
     }
