@@ -1,27 +1,24 @@
 package com.example.tutoria1.Component;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import com.example.tutoria1.Enums.Persona.TipoPersona;
+import com.example.tutoria1.Enums.VehiculoDocumento.VehiculoDocumentoStatus;
 import com.example.tutoria1.Enums.VehiculoPersona.EstadoConductor;
 import com.example.tutoria1.Model.PersonaModel;
+import com.example.tutoria1.Model.VehiculoDocumentoModel;
 import com.example.tutoria1.Model.VehiculoPersonaModel;
 import com.example.tutoria1.repository.PersonaRepository;
+import com.example.tutoria1.repository.VehiculoDocumentoRepository;
 import com.example.tutoria1.repository.VehiculoPersonaRepository;
 
 @Component 
 public class ScheduledTask {
-    
-    private static final Logger logger = LoggerFactory.getLogger(ScheduledTask.class);
-    private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
     
     // ========= INYECCIÓN DE DEPENDENCIAS ==========
  	@Qualifier ("IPersonaRepository")
@@ -30,43 +27,68 @@ public class ScheduledTask {
     @Qualifier ("IVehiculoPersonaRepository")
     private final VehiculoPersonaRepository vehiculoPersonaRepository;
 
+    @Qualifier ("IVehiculoDocumentoRepository")
+    private final VehiculoDocumentoRepository vehiculoDocumentoRepository;
+
     ScheduledTask(
         PersonaRepository personaRepository,
-        VehiculoPersonaRepository vehiculoPersonaRepository
+        VehiculoPersonaRepository vehiculoPersonaRepository,
+        VehiculoDocumentoRepository vehiculoDocumentoRepository
     ) {
         this.personaRepository = personaRepository;
         this.vehiculoPersonaRepository = vehiculoPersonaRepository;
+        this.vehiculoDocumentoRepository = vehiculoDocumentoRepository;
     }
 
-    @Scheduled (cron = "*/120 * * * * ?")
+    @Scheduled (cron = "0 */2 * * * *")
     public void scheduleTaskWithCronExpression(){
 
-        logger.info("Cron Task :: Execution Time - {}", dateTimeFormatter.format(LocalDateTime.now()));
-        try {
-            List<PersonaModel> personas = personaRepository.findAll();
-            if (personas != null) {
-                if (personas.size() > 0) {
-                    for (PersonaModel persona : personas) {
-                        LocalDate fechaActual = LocalDate.now();
-                        if (persona.getFechaVigenciaLicencia().isBefore(fechaActual)){
-                            List<VehiculoPersonaModel> relacionesDelConductor = vehiculoPersonaRepository.findByPersonaId(persona.getId());
-                            if (relacionesDelConductor != null) {
-                                for (VehiculoPersonaModel relacion : relacionesDelConductor){
-                                    relacion.setEstadoConductor(EstadoConductor.RO);
-                                }
-                            } else {
-                                throw new IllegalArgumentException("ERROR: No se encuentran relaciones del conductor con vehículos");
-                            }
-                        }
-                    }
-                } else {
-                    throw new IllegalArgumentException("ERROR: No se encuentran personas para evaluar licencias");
-                }
+        LocalDate hoy = LocalDate.now();
+        List<PersonaModel> personas = personaRepository.findAll();
+
+        for (PersonaModel persona : personas) {
+            if (persona.getTipoPersona() != TipoPersona.C
+                || persona.getFechaVigenciaLicencia() == null
+                || !persona.getFechaVigenciaLicencia().isBefore(hoy)){
+
+                    continue;
             } else {
-                throw new IllegalArgumentException("ERROR: No se encuentran personas para evaluar licencias");
+                List<VehiculoPersonaModel> vehiculosPersona = 
+                    vehiculoPersonaRepository.findByPersonaId(persona.getId());
+
+                for (VehiculoPersonaModel vehiculoPersona : vehiculosPersona){
+                    vehiculoPersona.setEstadoConductor(EstadoConductor.RO);
+                }
+
+                vehiculoPersonaRepository.saveAll(vehiculosPersona);
             }
-        } catch (Exception e){
-            System.out.println(e.getMessage());
         }
+
+        /* Tarea 2 */
+        List<VehiculoDocumentoModel> vehiculoDocumentos = vehiculoDocumentoRepository.findAll();
+
+        if (vehiculoDocumentos == null || vehiculoDocumentos.isEmpty()){
+            System.out.println("ERROR: No se pudo recuperar la lista de documentos");
+        } else {
+
+            for (VehiculoDocumentoModel vehiculoDocumento : vehiculoDocumentos){
+
+                if (vehiculoDocumento.getFechaVencimiento() == null 
+                    || !vehiculoDocumento.getFechaVencimiento().isBefore(hoy)
+                    || vehiculoDocumento.getEstadoDocumento() == VehiculoDocumentoStatus.VENCIDO){
+    
+                        continue;
+                }
+                
+                vehiculoDocumento.setEstadoDocumento(VehiculoDocumentoStatus.VENCIDO);
+                vehiculoDocumentoRepository.save(vehiculoDocumento);
+            }
+        }
+
+    }
+
+    @Scheduled (fixedDelay = 90_000)
+    public void scheduleTaskWithFixedDelay(){
+        
     }
 }
