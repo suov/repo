@@ -1,11 +1,6 @@
 package com.example.tutoria1.Model;
 
 import java.math.BigDecimal;
-import java.util.List;
-
-import com.example.tutoria1.Enums.Persona.TipoPersona;
-import com.example.tutoria1.Enums.VehiculoDocumento.VehiculoDocumentoStatus;
-import com.example.tutoria1.Enums.VehiculoPersona.EstadoConductor;
 
 import jakarta.persistence.CheckConstraint;
 import jakarta.persistence.Column;
