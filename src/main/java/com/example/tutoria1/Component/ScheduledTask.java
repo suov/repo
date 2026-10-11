@@ -1,7 +1,5 @@
 package com.example.tutoria1.Component;
 
-import java.awt.Toolkit;
-
 import java.time.LocalDate;
 import java.math.BigDecimal;
 import java.util.List;
@@ -97,6 +95,10 @@ public class ScheduledTask {
                     || !vehiculoDocumento.getFechaVencimiento().isBefore(hoy)
                     || vehiculoDocumento.getEstadoDocumento() == VehiculoDocumentoStatus.VENCIDO){
     
+                        if (vehiculoDocumento.getEstadoDocumento() == VehiculoDocumentoStatus.EN_VERIFICACION) {
+                            vehiculoDocumento.setEstadoDocumento(VehiculoDocumentoStatus.HABILITADO);
+                            vehiculoDocumentoRepository.save(vehiculoDocumento);
+                        }
                         continue;
                 }
                 
