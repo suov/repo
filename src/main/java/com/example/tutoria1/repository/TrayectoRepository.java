@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import com.example.tutoria1.Enums.VehiculoDocumento.VehiculoDocumentoStatus;
 import com.example.tutoria1.Enums.VehiculoPersona.EstadoConductor;
+import com.example.tutoria1.Model.PersonaModel;
 import com.example.tutoria1.Model.TrayectoModel;
 
 public interface TrayectoRepository extends JpaRepository<TrayectoModel, Long> {
@@ -29,4 +30,6 @@ public interface TrayectoRepository extends JpaRepository<TrayectoModel, Long> {
         @Param("habilitado") VehiculoDocumentoStatus habilitado,
         @Param("restringido") EstadoConductor restringido
     );
+
+    List<TrayectoModel> findByConductor(PersonaModel conductor);
 }

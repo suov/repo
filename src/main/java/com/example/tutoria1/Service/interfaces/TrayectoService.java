@@ -3,6 +3,7 @@ package com.example.tutoria1.Service.interfaces;
 import java.util.List;
 
 import com.example.tutoria1.Dto.Trayecto.Request.TrayectoRequestDto;
+import com.example.tutoria1.Dto.Trayecto.Response.CodigosResponseDto;
 import com.example.tutoria1.Dto.Trayecto.Response.TrayectoResponseDto;
 
 public interface TrayectoService {
@@ -15,4 +16,6 @@ public interface TrayectoService {
                 String codigoRuta);
 
         List<TrayectoResponseDto> consultarRutaPorVehiculoYConductor();
+
+        List<CodigosResponseDto> consultarCodigosDeRutaPorConductor(String documento);
 }

@@ -95,7 +95,8 @@ public class ScheduledTask {
                     || !vehiculoDocumento.getFechaVencimiento().isBefore(hoy)
                     || vehiculoDocumento.getEstadoDocumento() == VehiculoDocumentoStatus.VENCIDO){
     
-                        if (vehiculoDocumento.getEstadoDocumento() == VehiculoDocumentoStatus.EN_VERIFICACION) {
+                        if (vehiculoDocumento.getEstadoDocumento() != VehiculoDocumentoStatus.HABILITADO
+                            && vehiculoDocumento.getFechaVencimiento().isAfter(hoy)) {
                             vehiculoDocumento.setEstadoDocumento(VehiculoDocumentoStatus.HABILITADO);
                             vehiculoDocumentoRepository.save(vehiculoDocumento);
                         }

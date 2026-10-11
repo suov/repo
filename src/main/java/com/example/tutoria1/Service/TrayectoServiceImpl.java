@@ -1,5 +1,7 @@
 package com.example.tutoria1.Service;
 
+import com.example.tutoria1.repository.UsuarioRepository;
+
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -8,7 +10,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.example.tutoria1.Dto.Trayecto.Request.TrayectoRequestDto;
+import com.example.tutoria1.Dto.Trayecto.Response.CodigosResponseDto;
 import com.example.tutoria1.Dto.Trayecto.Response.TrayectoResponseDto;
+import com.example.tutoria1.Enums.Persona.TipoPersona;
 import com.example.tutoria1.Enums.VehiculoDocumento.VehiculoDocumentoStatus;
 import com.example.tutoria1.Enums.VehiculoPersona.EstadoConductor;
 import com.example.tutoria1.Model.PersonaModel;
@@ -32,7 +36,7 @@ public class TrayectoServiceImpl implements TrayectoService {
         public TrayectoServiceImpl(
                         TrayectoRepository trayectoRepository,
                         PersonaRepository personaRepository,
-                        VehiculoRepository vehiculoRepository) {
+                        VehiculoRepository vehiculoRepository, UsuarioRepository usuarioRepository) {
                 this.trayectoRepository = trayectoRepository;
                 this.personaRepository = personaRepository;
                 this.vehiculoRepository = vehiculoRepository;
@@ -121,6 +125,50 @@ public class TrayectoServiceImpl implements TrayectoService {
                                 .toList();
         }
 
+        @Override 
+        @Transactional(readOnly = true)
+        public List<CodigosResponseDto> consultarCodigosDeRutaPorConductor(
+                String documento
+        ) {
+                if (documento == null || documento.isBlank()) {
+                        throw new IllegalArgumentException(
+                                "ERROR: El número de identificación del conductor es obligatorio"
+                        );
+                }
+
+                /* Buscamos el conductor por el documento y validamos*/
+                PersonaModel conductor = personaRepository
+                        .findByDocumento(documento.trim())
+                        .stream()
+                        .findFirst()
+                        .orElseThrow(() -> new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "ERROR: No se encontró una persona con ese número de identificación"
+                        ));
+
+                if (conductor.getTipoPersona() != TipoPersona.C){
+                        throw new IllegalArgumentException(
+                                "ERROR: La persona indicada no está registrada como conductor"
+                        );
+                }
+
+                /* Traemos todos los trayectos y los metemos en una lista de String.*/
+                List<String> codigosUnicos = trayectoRepository
+                        .findByConductor(conductor)
+                        .stream()
+                        .map(TrayectoModel::getCodigoRuta)
+                        .distinct()
+                        .toList();
+
+                /* Recorremos guardando cada código en una lista que retornamos como dto*/
+                return codigosUnicos.stream()
+                        .map(codigoRuta -> {
+                                CodigosResponseDto dto = new CodigosResponseDto();
+                                dto.setCodigoRuta(codigoRuta);
+                                return dto;
+                        })
+                        .toList();
+        }
         /*
          * -------------------------------COMPLEMENTARIOS-------------------------------
          */
