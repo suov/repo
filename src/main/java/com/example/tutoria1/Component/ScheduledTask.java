@@ -1,5 +1,7 @@
 package com.example.tutoria1.Component;
 
+import java.awt.Toolkit;
+
 import java.time.LocalDate;
 import java.math.BigDecimal;
 import java.util.List;
@@ -80,6 +82,8 @@ public class ScheduledTask {
             }
         }
 
+        System.out.println("Primera tarea ejecutada");
+
         /* Tarea 2 */
         List<VehiculoDocumentoModel> vehiculoDocumentos = vehiculoDocumentoRepository.findAll();
 
@@ -100,6 +104,8 @@ public class ScheduledTask {
                 vehiculoDocumentoRepository.save(vehiculoDocumento);
             }
         }
+
+        System.out.println("Segunda tarea ejecutada");
 
     }
 
@@ -164,5 +170,7 @@ public class ScheduledTask {
                 );
             }
         }
+
+        System.out.println("Tercera tarea ejecutada");
     }
 }

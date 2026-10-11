@@ -8,11 +8,11 @@ import com.example.tutoria1.Dto.Trayecto.Response.TrayectoResponseDto;
 public interface TrayectoService {
 
         TrayectoResponseDto crearTrayecto(
-                        TrayectoRequestDto request,
-                        String loginUsuario);
+                TrayectoRequestDto request,
+                String loginUsuario);
 
         List<TrayectoResponseDto> consultarRutaPorCodigo(
-                        String codigoRuta);
+                String codigoRuta);
 
         List<TrayectoResponseDto> consultarRutaPorVehiculoYConductor();
 }

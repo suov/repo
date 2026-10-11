@@ -30,7 +30,7 @@ public class TrayectoController {
         @PostMapping
         public ResponseEntity<ApiResponseDTO<TrayectoResponseDto>> crearTrayecto(
                         @RequestBody TrayectoRequestDto request,
-                        Authentication authentication /* REVISAR */
+                        Authentication authentication
         ) {
 
                 String loginUsuario = authentication.getName();
@@ -59,6 +59,7 @@ public class TrayectoController {
         // conductor RO
         @GetMapping("/trayectoPorConductorYVehiculo")
         public ResponseEntity<List<TrayectoResponseDto>> consultarRutaPorVehiculoYConductor() {
+                
                 return ResponseEntity.ok(trayectoService.consultarRutaPorVehiculoYConductor());
         }
 

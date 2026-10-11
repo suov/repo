@@ -103,14 +103,19 @@ public class TrayectoServiceImpl implements TrayectoService {
                                 .toList();
         }
 
-        // Crear un servicio de consulta de las rutas y la información de los trayectos
-        // donde el vehículo NO este habilitado o el conductor este Restringido para
-        // Operar.
+        /* Crear un servicio de consulta 
+        ** de las rutas y la información de los trayectos donde el vehículo NO este habilitado
+        ** o el conductor este Restringido para Operar. */
 
         @Override
         public List<TrayectoResponseDto> consultarRutaPorVehiculoYConductor() {
+
                 List<TrayectoModel> trayectos = trayectoRepository
-                                .consultarRutaPorVehiculoYConductor();
+                                .consultarRutaPorVehiculoYConductor(
+                                        VehiculoDocumentoStatus.HABILITADO,
+                                        EstadoConductor.RO
+                                );
+
                 return trayectos.stream()
                                 .map(this::convertirAResponse)
                                 .toList();
