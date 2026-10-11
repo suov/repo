@@ -23,53 +23,43 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(
-        name = "trayectos",
-        uniqueConstraints = {
-                @UniqueConstraint(
-                        name = "uk_trayecto_codigo_ruta_orden",
-                        columnNames = { "codigo_ruta", "orden_parada" }
-                )
-        },
-        indexes = {
+@Table(name = "trayectos", uniqueConstraints = {
+                @UniqueConstraint(name = "uk_trayecto_codigo_ruta_orden", columnNames = { "codigo_ruta",
+                                "orden_parada" })
+}, indexes = {
                 @Index(name = "idx_trayecto_codigo_ruta", columnList = "codigo_ruta")
-        },
-        check = {
-                @CheckConstraint(
-                        name = "chk_orden_parada",
-                        constraint = "orden_parada >= 0"
-                )
-        }
-)
+}, check = {
+                @CheckConstraint(name = "chk_orden_parada", constraint = "orden_parada >= 0")
+})
 public class TrayectoModel {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        private Long id;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "persona_id", referencedColumnName = "id", nullable = false)
-    private PersonaModel conductor;
+        @ManyToOne(optional = false)
+        @JoinColumn(name = "persona_id", referencedColumnName = "id", nullable = false)
+        private PersonaModel conductor;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "vehiculo_id", referencedColumnName = "id", nullable = false)
-    private VehiculoModel vehiculo;
+        @ManyToOne(optional = false)
+        @JoinColumn(name = "vehiculo_id", referencedColumnName = "id", nullable = false)
+        private VehiculoModel vehiculo;
 
-    @Column(name = "codigo_ruta", nullable = false, length = 50)
-    private String codigoRuta;
+        @Column(name = "codigo_ruta", nullable = false, length = 50)
+        private String codigoRuta;
 
-    @Column(name = "ubicacion", nullable = false, length = 255)
-    private String ubicacion;
+        @Column(name = "ubicacion", nullable = false, length = 255)
+        private String ubicacion;
 
-    @Column(name = "orden_parada", nullable = false)
-    private Integer ordenParada;
+        @Column(name = "orden_parada", nullable = false)
+        private Integer ordenParada;
 
-    @Column(name = "latitud", precision = 10, scale = 7)
-    private BigDecimal latitud;
+        @Column(name = "latitud", precision = 10, scale = 7)
+        private BigDecimal latitud;
 
-    @Column(name = "longitud", precision = 10, scale = 7)
-    private BigDecimal longitud;
+        @Column(name = "longitud", precision = 10, scale = 7)
+        private BigDecimal longitud;
 
-    @Column(name = "login_usuario", nullable = false, length = 100)
-    private String loginUsuario;
+        @Column(name = "login_usuario", nullable = false, length = 100)
+        private String loginUsuario;
 }

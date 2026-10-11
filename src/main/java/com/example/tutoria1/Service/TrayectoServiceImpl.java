@@ -108,21 +108,9 @@ public class TrayectoServiceImpl implements TrayectoService {
         // Operar.
 
         @Override
-        public List<TrayectoResponseDto> consultarRutaInformacionPorVehiculoYConductor(
-                        VehiculoDocumentoStatus statusVehiculo, EstadoConductor estadoConductor) {
-
-                if (statusVehiculo == null) {
-                        throw new IllegalArgumentException(
-                                        "ERROR: El estado del vehículo es obligatorio");
-                }
-                if (estadoConductor == null) {
-                        throw new IllegalArgumentException(
-                                        "ERROR: El estado del conductor es obligatorio");
-                }
-
+        public List<TrayectoResponseDto> consultarRutaPorVehiculoYConductor() {
                 List<TrayectoModel> trayectos = trayectoRepository
-                                .consultarRutaInformacionPorVehiculoYConductor(statusVehiculo, estadoConductor);
-
+                                .consultarRutaPorVehiculoYConductor();
                 return trayectos.stream()
                                 .map(this::convertirAResponse)
                                 .toList();

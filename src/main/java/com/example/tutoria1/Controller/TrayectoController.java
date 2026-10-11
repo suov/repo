@@ -21,42 +21,45 @@ import com.example.tutoria1.Service.interfaces.TrayectoService;
 @RequestMapping("/api/trayectos")
 public class TrayectoController {
 
-    private final TrayectoService trayectoService;
+        private final TrayectoService trayectoService;
 
-    public TrayectoController(TrayectoService trayectoService) {
-        this.trayectoService = trayectoService;
-    }
+        public TrayectoController(TrayectoService trayectoService) {
+                this.trayectoService = trayectoService;
+        }
 
-    @PostMapping
-    public ResponseEntity<ApiResponseDTO<TrayectoResponseDto>> crearTrayecto(
-            @RequestBody TrayectoRequestDto request,
-            Authentication authentication /* REVISAR */
-    ) {
+        @PostMapping
+        public ResponseEntity<ApiResponseDTO<TrayectoResponseDto>> crearTrayecto(
+                        @RequestBody TrayectoRequestDto request,
+                        Authentication authentication /* REVISAR */
+        ) {
 
-        String loginUsuario = authentication.getName();
+                String loginUsuario = authentication.getName();
 
-        TrayectoResponseDto respuesta = trayectoService.crearTrayecto(
-                request,
-                loginUsuario
-        );
+                TrayectoResponseDto respuesta = trayectoService.crearTrayecto(
+                                request,
+                                loginUsuario);
 
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(
-                        new ApiResponseDTO<>(
-                                "Trayecto creado correctamente",
-                                respuesta
-                        )
-                );
-    }
+                return ResponseEntity.status(HttpStatus.CREATED)
+                                .body(
+                                                new ApiResponseDTO<>(
+                                                                "Trayecto creado correctamente",
+                                                                respuesta));
+        }
 
-    @GetMapping({"/ruta", "/ruta/{codigoRuta}"})
-    public ResponseEntity<List<TrayectoResponseDto>> consultarRuta(
-            @PathVariable(required = false) String codigoRuta
-    ) {
-        /* Validaciones ya en el service */
+        @GetMapping({ "/ruta", "/ruta/{codigoRuta}" })
+        public ResponseEntity<List<TrayectoResponseDto>> consultarRuta(
+                        @PathVariable(required = false) String codigoRuta) {
+                /* Validaciones ya en el service */
 
-        return ResponseEntity.ok(
-                trayectoService.consultarRutaPorCodigo(codigoRuta)
-        );
-    }
+                return ResponseEntity.ok(
+                                trayectoService.consultarRutaPorCodigo(codigoRuta));
+        }
+
+        // Consulta de rutas e información de los trayectos: vehiculo NO habilitado y
+        // conductor RO
+        @GetMapping("/trayectoPorConductorYVehiculo")
+        public ResponseEntity<List<TrayectoResponseDto>> consultarRutaPorVehiculoYConductor() {
+                return ResponseEntity.ok(trayectoService.consultarRutaPorVehiculoYConductor());
+        }
+
 }
