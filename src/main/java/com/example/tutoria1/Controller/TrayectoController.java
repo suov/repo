@@ -15,9 +15,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.tutoria1.Dto.Exception.ApiResponseDTO;
 import com.example.tutoria1.Dto.Trayecto.Request.TrayectoRequestDto;
 import com.example.tutoria1.Dto.Trayecto.Response.CodigosResponseDto;
+import com.example.tutoria1.Dto.Trayecto.Response.RutaConductorResponseDto;
 import com.example.tutoria1.Dto.Trayecto.Response.TrayectoResponseDto;
 import com.example.tutoria1.Service.interfaces.TrayectoService;
-
 
 @RestController
 @RequestMapping("/api/trayectos")
@@ -32,8 +32,7 @@ public class TrayectoController {
         @PostMapping
         public ResponseEntity<ApiResponseDTO<TrayectoResponseDto>> crearTrayecto(
                         @RequestBody TrayectoRequestDto request,
-                        Authentication authentication
-        ) {
+                        Authentication authentication) {
 
                 String loginUsuario = authentication.getName();
 
@@ -61,14 +60,20 @@ public class TrayectoController {
         // conductor RO
         @GetMapping("/trayectoPorConductorYVehiculo")
         public ResponseEntity<List<TrayectoResponseDto>> consultarRutaPorVehiculoYConductor() {
-                
+
                 return ResponseEntity.ok(trayectoService.consultarRutaPorVehiculoYConductor());
         }
 
         @GetMapping("/conductor/{documentoConductor}")
         public List<CodigosResponseDto> consultarCodigosDeRutaPorDocumentoCondcutor(
-                @PathVariable String documentoConductor) {
+                        @PathVariable String documentoConductor) {
 
-            return trayectoService.consultarCodigosDeRutaPorConductor(documentoConductor);
+                return trayectoService.consultarCodigosDeRutaPorConductor(documentoConductor);
         }
+
+        @GetMapping("/CodigoRutaYConductorPorPlaca/{placa}")
+        public List<RutaConductorResponseDto> consultaCodigoRutaYConductorPorPlaca(@PathVariable String placa) {
+                return trayectoService.consultaCodigoRutaYConductorPorPlaca(placa);
+        }
+
 }
