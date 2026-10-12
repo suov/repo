@@ -201,9 +201,9 @@ function ListaParadas({ paradas }) {
     return (
       <div className="empty-stops">
         <span className="empty-route-icon" aria-hidden="true">
-          ↗
+          ↖
         </span>
-        <p>Las paradas de la ruta se visualizan aquí.</p>
+        <p>Paradas de la ruta</p>
       </div>
     );
   }
@@ -400,7 +400,7 @@ export default function App() {
           </div>
         </div>
 
-
+        {/* Formulario */}
         <form className="search-form" onSubmit={handleSubmit}>
           <label className="field route-field">
             <span>Código de ruta</span>
@@ -416,12 +416,13 @@ export default function App() {
             <span>Token JWT</span>
             <input
               autoComplete="off"
-              placeholder="Pege su token SIN el 'Bearer'"
+              placeholder="Pegue su token SIN el 'Bearer'"
               type="password"
               value={token}
               onChange={(event) => setToken(event.target.value)}
             />
           </label>
+
           <label className="field credential-field">
             <span>API key de usuario</span>
             <input
@@ -432,6 +433,7 @@ export default function App() {
               onChange={(event) => setApiKey(event.target.value)}
             />
           </label>
+
           <button className="search-button" type="submit" disabled={cargando}>
             {cargando ? (
               <>
@@ -439,13 +441,14 @@ export default function App() {
               </>
             ) : (
               <>
-                Consultar ruta
+                Consultar la ruta
                 <span aria-hidden="true">→</span>
               </>
             )}
           </button>
         </form>
 
+        {/* Si hay un error se muestra. De lo contrario no */}
         {error && (
           <div className="error-message" role="alert">
             <span aria-hidden="true">!</span>
@@ -454,11 +457,16 @@ export default function App() {
         )}
       </section>
 
+      {/* Card de visualización */}
       <section className="results-heading">
+
+        {/* Titulo */}
         <div>
-          <p className="eyebrow">RESULTADO DE CONSULTA</p>
+          <p className="eyebrow">VISUALIZACIÓN</p>
           <h2>{rutaCargada ? `Ruta ${rutaCargada}` : "Vista de trayecto"}</h2>
         </div>
+
+        {/* Si ya hay paradas cargadas se muestran. Si no, no */}
         {rutaCargada && (
           <span className="stop-total">
             {paradasOrdenadas.length} {paradasOrdenadas.length === 1 ? "parada" : "paradas"}
@@ -467,11 +475,13 @@ export default function App() {
       </section>
 
       <section className="results-grid">
+
+        {/* Panel de paradas */}
         <div className="stops-panel">
           <div className="panel-header">
             <div>
-              <p className="eyebrow">RECORRIDO</p>
-              <h2>Paradas de la ruta</h2>
+              <p className="eyebrow">TRAYECTO</p>
+              <h2>Paradas del trayecto</h2>
             </div>
             {rutaCargada && <span className="route-chip">{rutaCargada}</span>}
           </div>
@@ -496,8 +506,9 @@ export default function App() {
         <TrazarRutaEnMapa paradas={paradasOrdenadas} />
       </section>
 
+      {/* Footer */}
       <footer className="page-footer">
-        <span>ruta+ <span className="footer-separator">·</span> Visor de trayectos</span>
+        <span>El mejor cipas+ <span className="footer-separator">·</span> Visor de trayectos</span>
         <span>Los marcadores muestran las coordenadas registradas para cada parada.</span>
       </footer>
     </main>
