@@ -38,7 +38,7 @@ public interface TrayectoRepository extends JpaRepository<TrayectoModel, Long> {
             FROM TrayectoModel t
             JOIN t.conductor c
             JOIN t.vehiculo v
-            WHERE v.placa = :placa;
+            WHERE v.placa = :placa
             """)
     List<RutaConductorResponseDto> consultarCodigoRutaYConductorPorPlaca(@Param("placa") String placa);
 }

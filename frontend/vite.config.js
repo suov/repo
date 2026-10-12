@@ -8,7 +8,19 @@ export default defineConfig({
     port: 5500,
     strictPort: true,
     proxy: {
+      "/authenticate": {
+        target: "http://localhost:8080",
+        changeOrigin: true,
+      },
       "/api": {
+        target: "http://localhost:8080",
+        changeOrigin: true,
+      },
+      "/persona": {
+        target: "http://localhost:8080",
+        changeOrigin: true,
+      },
+      "/usuario": {
         target: "http://localhost:8080",
         changeOrigin: true,
       },
