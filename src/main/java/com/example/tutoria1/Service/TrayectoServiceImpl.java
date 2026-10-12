@@ -177,7 +177,7 @@ public class TrayectoServiceImpl implements TrayectoService {
          */
         @Override
         @Transactional(readOnly = true)
-        public List<RutaConductorResponseDto> consultaCodigoRutaYConductorPorPalca(String placa) {
+        public List<RutaConductorResponseDto> consultaCodigoRutaYConductorPorPlaca(String placa) {
                 if (placa == null || placa.isBlank()) {
                         throw new IllegalArgumentException(
                                         "ERROR: La placa es obligatoria");

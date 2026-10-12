@@ -20,5 +20,5 @@ public interface TrayectoService {
 
         List<CodigosResponseDto> consultarCodigosDeRutaPorConductor(String documento);
 
-        List<RutaConductorResponseDto> consultaCodigoRutaYConductorPorPalca(String placa);
+        List<RutaConductorResponseDto> consultaCodigoRutaYConductorPorPlaca(String placa);
 }

@@ -18,7 +18,6 @@ import com.example.tutoria1.Dto.Trayecto.Response.CodigosResponseDto;
 import com.example.tutoria1.Dto.Trayecto.Response.RutaConductorResponseDto;
 import com.example.tutoria1.Dto.Trayecto.Response.TrayectoResponseDto;
 import com.example.tutoria1.Service.interfaces.TrayectoService;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/api/trayectos")
@@ -73,8 +72,8 @@ public class TrayectoController {
         }
 
         @GetMapping("/CodigoRutaYConductorPorPlaca/{placa}")
-        public List<RutaConductorResponseDto> consultaCodigoRutaYConductorPorPalca(@PathVariable String placa) {
-                return trayectoService.consultaCodigoRutaYConductorPorPalca(placa);
+        public List<RutaConductorResponseDto> consultaCodigoRutaYConductorPorPlaca(@PathVariable String placa) {
+                return trayectoService.consultaCodigoRutaYConductorPorPlaca(placa);
         }
 
 }
