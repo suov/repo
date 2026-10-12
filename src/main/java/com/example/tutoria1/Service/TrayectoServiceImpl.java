@@ -11,6 +11,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.example.tutoria1.Dto.Trayecto.Request.TrayectoRequestDto;
 import com.example.tutoria1.Dto.Trayecto.Response.CodigosResponseDto;
+import com.example.tutoria1.Dto.Trayecto.Response.RutaConductorResponseDto;
 import com.example.tutoria1.Dto.Trayecto.Response.TrayectoResponseDto;
 import com.example.tutoria1.Enums.Persona.TipoPersona;
 import com.example.tutoria1.Enums.VehiculoDocumento.VehiculoDocumentoStatus;
@@ -107,68 +108,89 @@ public class TrayectoServiceImpl implements TrayectoService {
                                 .toList();
         }
 
-        /* Crear un servicio de consulta 
-        ** de las rutas y la información de los trayectos donde el vehículo NO este habilitado
-        ** o el conductor este Restringido para Operar. */
+        /*
+         * Crear un servicio de consulta
+         ** de las rutas y la información de los trayectos donde el vehículo NO este
+         * habilitado
+         ** o el conductor este Restringido para Operar.
+         */
 
         @Override
         public List<TrayectoResponseDto> consultarRutaPorVehiculoYConductor() {
 
                 List<TrayectoModel> trayectos = trayectoRepository
                                 .consultarRutaPorVehiculoYConductor(
-                                        VehiculoDocumentoStatus.HABILITADO,
-                                        EstadoConductor.RO
-                                );
+                                                VehiculoDocumentoStatus.HABILITADO,
+                                                EstadoConductor.RO);
 
                 return trayectos.stream()
                                 .map(this::convertirAResponse)
                                 .toList();
         }
 
-        @Override 
+        @Override
         @Transactional(readOnly = true)
         public List<CodigosResponseDto> consultarCodigosDeRutaPorConductor(
-                String documento
-        ) {
+                        String documento) {
                 if (documento == null || documento.isBlank()) {
                         throw new IllegalArgumentException(
-                                "ERROR: El número de identificación del conductor es obligatorio"
-                        );
+                                        "ERROR: El número de identificación del conductor es obligatorio");
                 }
 
-                /* Buscamos el conductor por el documento y validamos*/
+                /* Buscamos el conductor por el documento y validamos */
                 PersonaModel conductor = personaRepository
-                        .findByDocumento(documento.trim())
-                        .stream()
-                        .findFirst()
-                        .orElseThrow(() -> new ResponseStatusException(
-                                HttpStatus.NOT_FOUND,
-                                "ERROR: No se encontró una persona con ese número de identificación"
-                        ));
+                                .findByDocumento(documento.trim())
+                                .stream()
+                                .findFirst()
+                                .orElseThrow(() -> new ResponseStatusException(
+                                                HttpStatus.NOT_FOUND,
+                                                "ERROR: No se encontró una persona con ese número de identificación"));
 
-                if (conductor.getTipoPersona() != TipoPersona.C){
+                if (conductor.getTipoPersona() != TipoPersona.C) {
                         throw new IllegalArgumentException(
-                                "ERROR: La persona indicada no está registrada como conductor"
-                        );
+                                        "ERROR: La persona indicada no está registrada como conductor");
                 }
 
-                /* Traemos todos los trayectos y los metemos en una lista de String.*/
+                /* Traemos todos los trayectos y los metemos en una lista de String. */
                 List<String> codigosUnicos = trayectoRepository
-                        .findByConductor(conductor)
-                        .stream()
-                        .map(TrayectoModel::getCodigoRuta)
-                        .distinct()
-                        .toList();
+                                .findByConductor(conductor)
+                                .stream()
+                                .map(TrayectoModel::getCodigoRuta)
+                                .distinct()
+                                .toList();
 
-                /* Recorremos guardando cada código en una lista que retornamos como dto*/
+                /* Recorremos guardando cada código en una lista que retornamos como dto */
                 return codigosUnicos.stream()
-                        .map(codigoRuta -> {
-                                CodigosResponseDto dto = new CodigosResponseDto();
-                                dto.setCodigoRuta(codigoRuta);
-                                return dto;
-                        })
-                        .toList();
+                                .map(codigoRuta -> {
+                                        CodigosResponseDto dto = new CodigosResponseDto();
+                                        dto.setCodigoRuta(codigoRuta);
+                                        return dto;
+                                })
+                                .toList();
         }
+
+        /*
+         * Crear un servicio de consulta teniendo como parámetro la placa del un
+         * vehículo especifico donde se visualice el código de ruta y el conductor
+         * asociado al trayecto de forma agrupada. Esté deberá ser un servicio protegido
+         * (requiere token).
+         */
+        @Override
+        @Transactional(readOnly = true)
+        public List<RutaConductorResponseDto> consultaCodigoRutaYConductorPorPalca(String placa) {
+                if (placa == null || placa.isBlank()) {
+                        throw new IllegalArgumentException(
+                                        "ERROR: La placa es obligatoria");
+                }
+
+                List<RutaConductorResponseDto> respuesta = trayectoRepository
+                                .consultarCodigoRutaYConductorPorPlaca(placa);
+                return respuesta.stream()
+                                .map(this::convertirRutaConductorResponseDto)
+                                .toList();
+
+        }
+
         /*
          * -------------------------------COMPLEMENTARIOS-------------------------------
          */
@@ -305,6 +327,17 @@ public class TrayectoServiceImpl implements TrayectoService {
                 dto.setLongitud(modelo.getLongitud());
 
                 return dto;
+        }
+
+        // DTO de RutaConductorResponseDTO
+        private RutaConductorResponseDto convertirRutaConductorResponseDto(RutaConductorResponseDto respuesta) {
+
+                RutaConductorResponseDto dto = new RutaConductorResponseDto();
+                dto.setCodigoRuta(respuesta.getCodigoRuta());
+                dto.setConductor(respuesta.getConductor());
+
+                return dto;
+
         }
 
 }
