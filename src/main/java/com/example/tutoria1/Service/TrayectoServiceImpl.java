@@ -88,16 +88,12 @@ public class TrayectoServiceImpl implements TrayectoService {
         public List<TrayectoResponseDto> consultarRutaPorCodigo(
                         String codigoRuta) {
 
-                if (codigoRuta == null || codigoRuta.isBlank()) {
-                        throw new IllegalArgumentException(
-                                        "ERROR: El código de ruta es obligatorio");
-                }
-
-                List<TrayectoModel> trayectos = trayectoRepository
-                                .findByCodigoRutaOrderByOrdenParadaAsc(
+                List<TrayectoModel> trayectos = codigoRuta == null || codigoRuta.isBlank()
+                                ? trayectoRepository.findAllByOrderByCodigoRutaAscOrdenParadaAsc()
+                                : trayectoRepository.findByCodigoRutaOrderByOrdenParadaAsc(
                                                 codigoRuta.trim().toUpperCase());
 
-                if (trayectos.isEmpty()) {
+                if (trayectos.isEmpty() && codigoRuta != null && !codigoRuta.isBlank()) {
                         throw new ResponseStatusException(
                                         HttpStatus.NOT_FOUND,
                                         "ERROR: No se encontraron paradas para la ruta indicada");

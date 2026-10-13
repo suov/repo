@@ -65,6 +65,8 @@ public class WebSecurityConfig {
 					.requestMatchers("/api/vehiculos/por-vencer/**").permitAll() //OK
 					.requestMatchers("/api/vehiculos/vencidos").permitAll() //OK
 					.requestMatchers("/api/vehiculo-persona/conductores/pueden-operar").permitAll() //OK
+					.requestMatchers("/api/trayectos/trayectoPorConductorYVehiculo").permitAll() //OK
+
 					.requestMatchers("/persona/**").hasRole("ADMIN") //OK
 					.requestMatchers("/usuario/**").hasRole("ADMIN") //OK
 					.requestMatchers("/api/vehiculos/**").hasRole("ADMIN") //OK

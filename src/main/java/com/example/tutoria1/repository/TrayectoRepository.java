@@ -17,6 +17,8 @@ public interface TrayectoRepository extends JpaRepository<TrayectoModel, Long> {
     List<TrayectoModel> findByCodigoRutaOrderByOrdenParadaAsc(
             String codigoRuta);
 
+    List<TrayectoModel> findAllByOrderByCodigoRutaAscOrdenParadaAsc();
+
     @Query("""
             SELECT DISTINCT t
             FROM TrayectoModel t
