@@ -1,38 +1,56 @@
 import { useEffect, useState } from "react";
 import { mensajeDeError, solicitarEndpoint } from "../servicios/api.js";
 import { GRUPOS_ADMINISTRATIVOS } from "../endpoints/grupos.js";
+import FormularioDatos from "./FormularioDatos.jsx";
 
 function valoresIniciales(parametros = []) {
   return Object.fromEntries(parametros.map(({ nombre, valorInicial }) => [nombre, valorInicial || ""]));
 }
 
+function formularioVacio(objeto) {
+  if (Array.isArray(objeto)) {
+    return objeto.map(formularioVacio);
+  }
+
+  if (objeto && typeof objeto === "object") {
+    return Object.fromEntries(
+      Object.entries(objeto).map(([nombre, valor]) => [nombre, formularioVacio(valor)]),
+    );
+  }
+
+  return "";
+}
+
 export default function FormularioSolicitud({
   endpoint,
   sesion,
+  precarga,
   alRecibirRespuesta,
   alActualizarApiKey,
+  alCancelarEdicion,
 }) {
 
   const [valoresRuta, setValoresRuta] = useState({});
   const [valoresConsulta, setValoresConsulta] = useState({});
-  const [cuerpo, setCuerpo] = useState("");
+  const [valoresCuerpo, setValoresCuerpo] = useState({});
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState("");
   const [aviso, setAviso] = useState("");
 
   useEffect(() => {
-    setValoresRuta(valoresIniciales(endpoint.parametrosRuta));
+    const precargaActiva = precarga?.endpointId === endpoint.id ? precarga : null;
+    setValoresRuta({
+      ...valoresIniciales(endpoint.parametrosRuta),
+      ...precargaActiva?.valoresRuta,
+    });
     setValoresConsulta(valoresIniciales(endpoint.parametrosConsulta));
-    setCuerpo(endpoint.ejemploCuerpo ? JSON.stringify(endpoint.ejemploCuerpo, null, 2) : "");
+    setValoresCuerpo(precargaActiva?.cuerpo || formularioVacio(endpoint.ejemploCuerpo));
     setError("");
     setAviso("");
     alRecibirRespuesta(null);
-  }, [endpoint, alRecibirRespuesta]);
+  }, [endpoint, precarga, alRecibirRespuesta]);
 
-  const rutaVisible = endpoint.ruta.replace(/:([A-Za-z0-9_]+)/g, (_, nombre) => {
-    const valor = valoresRuta[nombre]?.trim();
-    return valor ? encodeURIComponent(valor) : `:${nombre}`;
-  });
+  const estaEditando = precarga?.endpointId === endpoint.id;
 
   async function enviarSolicitud(event) {
     event.preventDefault();
@@ -44,19 +62,6 @@ export default function FormularioSolicitud({
     if (endpoint.parametrosRuta?.some(({ nombre }) => !valoresRuta[nombre]?.trim())) {
       setError("ERROR: Complete los datos de la ruta antes de enviar la consulta.");
       return;
-    }
-
-    let cuerpoProcesado;
-
-    if (endpoint.ejemploCuerpo) {
-
-      try {
-        cuerpoProcesado = JSON.parse(cuerpo);
-
-      } catch {
-        setError("ERROR: El contenido de la solicitud no es un JSON válido.");
-        return;
-      }
     }
 
     if (endpoint.metodo === "DELETE" &&
@@ -73,7 +78,7 @@ export default function FormularioSolicitud({
       const respuesta = await solicitarEndpoint(endpoint, {
         valoresRuta,
         valoresConsulta,
-        cuerpo: cuerpoProcesado,
+        cuerpo: valoresCuerpo,
         sesion,
       });
 
@@ -114,17 +119,14 @@ export default function FormularioSolicitud({
       <div className="request-heading">
 
         <div>
-          <p className="eyebrow">{endpoint.acceso === "publico" ? "ENDPOINT PÚBLICO" : "ENDPOINT PROTEGIDO"}</p>
-          <h2>{endpoint.titulo}</h2>
+          <p className="eyebrow">{estaEditando ? "EDITAR REGISTRO" : "FORMULARIO"}</p>
+          <h2>{estaEditando ? "Editar información" : endpoint.titulo}</h2>
           <p>{endpoint.descripcion}</p>
         </div>
 
-        <span className={`method-badge method-${endpoint.metodo.toLowerCase()}`}>{endpoint.metodo}</span>
-      </div>
-
-      <div className="request-url">
-        <span>{endpoint.metodo}</span>
-        <code>{rutaVisible}</code>
+        <span className={`method-badge method-${endpoint.metodo.toLowerCase()}`}>
+          {endpoint.metodo === "GET" ? "CONSULTA" : endpoint.metodo === "POST" ? "CREAR" : endpoint.metodo === "PUT" ? "EDITAR" : "ELIMINAR"}
+        </span>
       </div>
 
       <form className="request-form" onSubmit={enviarSolicitud}>
@@ -161,33 +163,37 @@ export default function FormularioSolicitud({
         ))}
 
         {endpoint.ejemploCuerpo && (
-          <label className="field json-field">
-            <span>Contenido de la solicitud <small>JSON</small></span>
-            <textarea
-              spellCheck="false"
-              value={cuerpo}
-              onChange={(event) => setCuerpo(event.target.value)}
-              rows={Math.min(15, Math.max(6, cuerpo.split("\n").length))}
-            />
-          </label>
+          <div className="data-form">
+            <p className="form-section-title">
+              {estaEditando ? "Datos del registro" : "Complete los datos"}
+            </p>
+            <FormularioDatos valores={valoresCuerpo} alCambiar={setValoresCuerpo} />
+          </div>
         )}
 
         {endpoint.acceso === "privado" && endpoint.grupo === "rutas" && (
           <p className="permission-note">
-            Este servicio requiere iniciar sesión.
+            Estas acciones requieren iniciar sesión.
           </p>
         )}
 
         {endpoint.acceso === "privado" && GRUPOS_ADMINISTRATIVOS.has(endpoint.grupo) && (
           <p className="permission-note">
-            Este servicio administrativo puede requerir un usuario administrador.
+            Para administrar estos datos, el usuario debe tener tipo de persona A.
           </p>
         )}
 
-        <button className="search-button request-button" type="submit" disabled={cargando}>
-          {cargando ? <><span className="spinner" /> Enviando solicitud</> : "Enviar solicitud"}
-          {!cargando && <span aria-hidden="true">→</span>}
-        </button>
+        <div className="form-actions">
+          <button className="search-button request-button" type="submit" disabled={cargando}>
+            {cargando ? <><span className="spinner" /> Procesando</> : endpoint.metodo === "GET" ? "Consultar" : endpoint.metodo === "POST" ? "Guardar" : endpoint.metodo === "PUT" ? "Guardar cambios" : "Eliminar"}
+            {!cargando && <span aria-hidden="true">→</span>}
+          </button>
+          {estaEditando && (
+            <button className="secondary-button" type="button" onClick={alCancelarEdicion}>
+              Cancelar edición
+            </button>
+          )}
+        </div>
       </form>
 
       {error && <div className="error-message" role="alert"><span aria-hidden="true">!</span>{error}</div>}

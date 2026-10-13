@@ -78,6 +78,7 @@ export const ENDPOINTES_PRIVADOS = [
     descripcion: "Muestra las personas registradas.",
     metodo: "GET",
     ruta: "/persona",
+    editarEndpoint: "persona-actualizar",
     acceso: "privado",
   },
   {
@@ -110,6 +111,7 @@ export const ENDPOINTES_PRIVADOS = [
     descripcion: "Muestra los vehículos registrados.",
     metodo: "GET",
     ruta: "/api/vehiculos",
+    editarEndpoint: "vehiculo-actualizar",
     acceso: "privado",
   },
   {
@@ -200,6 +202,7 @@ export const ENDPOINTES_PRIVADOS = [
     descripcion: "Consulta los tipos de documento configurados.",
     metodo: "GET",
     ruta: "/api/documento",
+    editarEndpoint: "documento-actualizar",
     acceso: "privado",
   },
   {

@@ -16,7 +16,7 @@ public class Constans {
 	
 	//JWT
 	public static final String SUPER_SECRET_KEY = "EstaEsMiContraseñaSuperSecretaQueNadiePuedeSaberYNoPuedoCompartir";
-	public static final long TOKEN_EXPIRATION_TIME = 864_000_000;
+	public static final long TOKEN_EXPIRATION_TIME = 864_000_000; //10 días
 	
 	public static Key getSigningKey864(String secret) {
 		byte[] keyBytes = Decoders.BASE64.decode(secret);

@@ -22,7 +22,19 @@ export function mensajeDeError(respuesta, estado) {
   }
 
   if (estado === 403) {
-    return "ERROR: El servidor rechazó la solicitud. Verifique la API key y sus permisos de administrador.";
+    const detalle = typeof respuesta === "string"
+      ? respuesta.toLowerCase()
+      : `${respuesta?.message || ""} ${respuesta?.error || ""}`.toLowerCase();
+
+    if (detalle.includes("x-api-key") || detalle.includes("api key") || detalle.includes("apikey")) {
+      return "La API key no coincide con la de este usuario. Revísela o vuelva a iniciar sesión con la clave actual.";
+    }
+
+    if (detalle.includes("access denied") || detalle.includes("acceso denegado") || detalle.includes("forbidden")) {
+      return "La sesión fue reconocida, pero esta acción necesita un usuario administrador. En el sistema, su persona debe tener tipo A. Si ya lo tiene, cierre sesión y vuelva a entrar.";
+    }
+
+    return "El servidor rechazó la solicitud. Revise que la API key sea la de este usuario y que su persona tenga tipo A para acciones administrativas.";
   }
 
   return respuesta?.message || respuesta?.reason || respuesta?.error ||

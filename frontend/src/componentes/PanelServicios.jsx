@@ -7,8 +7,32 @@ import { guardarSesion } from "../servicios/sesion.js";
 import {
   ENDPOINTES,
   ENDPOINTES_PUBLICOS,
+  ENDPOINTES_PRIVADOS,
   GRUPOS_ENDPOINTES,
 } from "../endpoints/index.js";
+
+function datosParaEditar(ejemplo, registro) {
+  if (Array.isArray(ejemplo)) {
+    if (ejemplo.length === 0 || !Array.isArray(registro)) {
+      return [];
+    }
+
+    return registro.map((item) => datosParaEditar(ejemplo[0], item));
+  }
+
+  if (ejemplo && typeof ejemplo === "object") {
+    return Object.fromEntries(
+      Object.entries(ejemplo).map(([nombre, valor]) => [
+        nombre,
+        registro?.[nombre] === undefined
+          ? valor
+          : datosParaEditar(valor, registro[nombre]),
+      ]),
+    );
+  }
+
+  return registro === undefined || registro === null ? ejemplo : registro;
+}
 
 export default function PanelServicios({
   sesion,
@@ -27,6 +51,7 @@ export default function PanelServicios({
   const [grupoActivo, setGrupoActivo] = useState(publico ? "personas" : "rutas");
   const [endpointId, setEndpointId] = useState(publico ? "personas-total" : "ruta-por-codigo");
   const [respuesta, setRespuesta] = useState(null);
+  const [precarga, setPrecarga] = useState(null);
 
   const grupoActual = gruposVisibles.find((grupo) => grupo.id === grupoActivo) || gruposVisibles[0];
   const endpointActivo = endpointsVisibles.find((endpoint) => endpoint.id === endpointId)
@@ -39,11 +64,39 @@ export default function PanelServicios({
       setGrupoActivo(grupo.id);
       setEndpointId(primerEndpoint.id);
       setRespuesta(null);
+      setPrecarga(null);
     }
   }
 
   function seleccionarEndpoint(endpoint) {
     setEndpointId(endpoint.id);
+    setRespuesta(null);
+    setPrecarga(null);
+  }
+
+  function editarRegistro(endpointLista, registro) {
+    const endpointEditar = ENDPOINTES_PRIVADOS.find(
+      (endpoint) => endpoint.id === endpointLista.editarEndpoint,
+    );
+
+    if (!endpointEditar) {
+      return;
+    }
+
+    const valoresRuta = Object.fromEntries(
+      (endpointEditar.parametrosRuta || []).map(({ nombre }) => [
+        nombre,
+        registro[nombre] ?? registro.id ?? "",
+      ]),
+    );
+
+    setGrupoActivo(endpointEditar.grupo);
+    setEndpointId(endpointEditar.id);
+    setPrecarga({
+      endpointId: endpointEditar.id,
+      valoresRuta,
+      cuerpo: datosParaEditar(endpointEditar.ejemploCuerpo, registro),
+    });
     setRespuesta(null);
   }
 
@@ -70,7 +123,7 @@ export default function PanelServicios({
             ? "Elija una consulta disponible."
             : grupoActivo === "rutas"
               ? "Comience por consultar una ruta; los demás servicios están organizados por secciones."
-              : "Seleccione una operación para consultar o administrar este servicio."}
+              : "Elija qué desea hacer en esta sección."}
         </p>
       </section>
 
@@ -85,14 +138,21 @@ export default function PanelServicios({
         {endpointActivo && (
           <div className="endpoint-main">
             <FormularioSolicitud
-              key={endpointActivo.id}
               endpoint={endpointActivo}
               sesion={sesion}
+              precarga={precarga}
               alRecibirRespuesta={setRespuesta}
               alActualizarApiKey={actualizarApiKey}
+              alCancelarEdicion={() => setPrecarga(null)}
             />
             {respuesta && (
-              <ResultadoSolicitud endpoint={endpointActivo} respuesta={respuesta} />
+              <ResultadoSolicitud
+                endpoint={endpointActivo}
+                respuesta={respuesta}
+                alEditar={endpointActivo.editarEndpoint
+                  ? (registro) => editarRegistro(endpointActivo, registro)
+                  : null}
+              />
             )}
           </div>
         )}

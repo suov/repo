@@ -14,9 +14,16 @@ export default function NavegacionServicios({
 
   const endpointsDelGrupo = endpoints.filter((endpoint) => endpoint.grupo === grupoActivo);
 
+  function nombreAccion(metodo) {
+    if (metodo === "GET") return "Consultar";
+    if (metodo === "POST") return "Crear";
+    if (metodo === "PUT") return "Actualizar";
+    return "Eliminar";
+  }
+
   return (
     <>
-      <nav className="service-tabs" aria-label="Servicios de la API">
+      <nav className="service-tabs" aria-label="Secciones del portal">
         {gruposVisibles.map((grupo) => (
           <button
             className={`service-tab ${grupoActivo === grupo.id ? "is-active" : ""}`}
@@ -31,10 +38,10 @@ export default function NavegacionServicios({
         ))}
       </nav>
 
-      <aside className="endpoint-sidebar" aria-label="Operaciones disponibles">
+      <aside className="endpoint-sidebar" aria-label="Acciones disponibles">
         <div className="sidebar-heading">
-          <p className="eyebrow">SERVICIOS</p>
-          <span>{endpointsDelGrupo.length} operaciones</span>
+          <p className="eyebrow">ACCIONES</p>
+          <span>{endpointsDelGrupo.length} disponibles</span>
         </div>
 
         <div className="endpoint-list">
@@ -45,7 +52,9 @@ export default function NavegacionServicios({
               type="button"
               onClick={() => alSeleccionarEndpoint(endpoint)}
             >
-              <span className={`method-badge method-${endpoint.metodo.toLowerCase()}`}>{endpoint.metodo}</span>
+              <span className={`method-badge method-${endpoint.metodo.toLowerCase()}`}>
+                {nombreAccion(endpoint.metodo)}
+              </span>
               <span className="endpoint-link-copy">
                 <strong>{endpoint.titulo}</strong>
                 <small>
