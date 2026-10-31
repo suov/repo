@@ -189,7 +189,6 @@ export const ENDPOINTES_PRIVADOS = [
       archivoBase64: "",
       fechaExpedicion: "2026-01-01",
       fechaVencimiento: "2027-01-01",
-      archivoPdfBase64: "",
     }],
     acceso: "privado",
   },
@@ -271,7 +270,7 @@ export const ENDPOINTES_PRIVADOS = [
     id: "asociaciones-crear",
     grupo: "asociaciones",
     titulo: "Asociación de conductor y vehículo",
-    descripcion: "Crea una asociación con estado PO, EA o RO.",
+    descripcion: "Crea una asociación con estado PO (Puede operar), EA (Espera de aprobación) o RO (Restringido para operar)",
     metodo: "POST",
     ruta: "/api/vehiculo-persona",
     ejemploCuerpo: {

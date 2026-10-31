@@ -198,11 +198,8 @@ public class VehiculoServiceImpl implements VehiculoService {
 
         validarBase64Pdf(vehiculoDocumento.getArchivoBase64());
 
-        String limpio = vehiculoDocumento.getArchivoBase64()
-                .replace("data:application/pdf;base64,", "")
-                .replace("data:application/octet-stream;base64,", "")
-                .trim();
-
+        String limpio = limpiarBase64Pdf(vehiculoDocumento.getArchivoBase64());
+        vehiculoDocumento.setArchivoBase64(limpio);
         vehiculoDocumento.setArchivoPdf(Base64.getDecoder().decode(limpio));
 
         DocumentoModel documento = documentoRepository.findById(
@@ -248,7 +245,8 @@ public class VehiculoServiceImpl implements VehiculoService {
                 throw new IllegalArgumentException("El PDF en Base64 es obligatorio");
             }
 
-            validarBase64Pdf(dto.getArchivoBase64());
+            String archivoBase64 = limpiarBase64Pdf(dto.getArchivoBase64());
+            validarBase64Pdf(archivoBase64);
 
             VehiculoDocumentoModel entidad = vehiculoDocumentoRepository
                     .findByVehiculoIdAndDocumentoId(vehiculoId, dto.getDocumentoId())
@@ -257,7 +255,8 @@ public class VehiculoServiceImpl implements VehiculoService {
             entidad.setVehiculo(obtenerVehiculoPorId(vehiculoId));
             entidad.setDocumento(documento);
             entidad.setNombreArchivo(dto.getNombreArchivo());
-            entidad.setArchivoBase64(dto.getArchivoBase64());
+            entidad.setArchivoBase64(archivoBase64);
+            entidad.setArchivoPdf(Base64.getDecoder().decode(archivoBase64));
             entidad.setFechaExpedicion(dto.getFechaExpedicion());
             entidad.setFechaVencimiento(dto.getFechaVencimiento());
             entidad.setEstadoDocumento(VehiculoDocumentoStatus.EN_VERIFICACION);
@@ -266,6 +265,13 @@ public class VehiculoServiceImpl implements VehiculoService {
         }
 
         return resultado;
+    }
+
+    private String limpiarBase64Pdf(String base64) {
+        return base64
+                .replace("data:application/pdf;base64,", "")
+                .replace("data:application/octet-stream;base64,", "")
+                .trim();
     }
 
     private void validarBase64Pdf(String base64) {

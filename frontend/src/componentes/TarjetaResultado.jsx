@@ -4,8 +4,8 @@ function etiqueta(nombre) {
     .replace(/^./, (letra) => letra.toUpperCase());
 }
 
-function mostrarValor(nombre, valor) {
-  if (/password|apikey|api_key/i.test(nombre)) {
+function mostrarValor(nombre, valor, mostrarApiKey) {
+  if (/password/i.test(nombre) || (!mostrarApiKey && /apikey|api_key/i.test(nombre))) {
     return "Dato privado";
   }
 
@@ -19,7 +19,7 @@ function mostrarValor(nombre, valor) {
 
   if (typeof valor === "object") {
     return Object.entries(valor)
-      .map(([clave, dato]) => `${etiqueta(clave)}: ${mostrarValor(clave, dato)}`)
+      .map(([clave, dato]) => `${etiqueta(clave)}: ${mostrarValor(clave, dato, mostrarApiKey)}`)
       .join(" · ");
   }
 
@@ -30,7 +30,15 @@ function mostrarValor(nombre, valor) {
   return String(valor);
 }
 
-function tituloDe(registro) {
+function tituloDe(registro, esUsuario, esConductorHabilitado) {
+  if (esUsuario && registro.login) {
+    return registro.login;
+  }
+
+  if (esConductorHabilitado && registro.nombreConductor) {
+    return registro.nombreConductor;
+  }
+
   return registro.placa
     || registro.nombreDocumento
     || registro.codigoRuta
@@ -39,22 +47,30 @@ function tituloDe(registro) {
     || `Registro ${registro.id ?? ""}`;
 }
 
-export default function TarjetaResultado({ registro, alEditar }) {
+export default function TarjetaResultado({
+  registro,
+  alEditar,
+  mostrarApiKey = false,
+  esConductorHabilitado = false,
+}) {
   const campos = Object.entries(registro).filter(([nombre]) =>
-    !/password|apikey|api_key/i.test(nombre),
+    !/password/i.test(nombre)
+      && !(mostrarApiKey && nombre === "login")
+      && !(esConductorHabilitado && nombre === "nombreConductor")
+      && (mostrarApiKey || !/apikey|api_key/i.test(nombre)),
   );
 
   return (
     <article className="record-card">
       <div className="record-card-heading">
-        <h3>{tituloDe(registro)}</h3>
+        <h3>{tituloDe(registro, mostrarApiKey, esConductorHabilitado)}</h3>
         {registro.id !== undefined && <span>#{registro.id}</span>}
       </div>
       <dl className="record-details">
         {campos.map(([nombre, valor]) => (
           <div key={nombre}>
             <dt>{etiqueta(nombre)}</dt>
-            <dd>{mostrarValor(nombre, valor)}</dd>
+            <dd>{mostrarValor(nombre, valor, mostrarApiKey)}</dd>
           </div>
         ))}
       </dl>

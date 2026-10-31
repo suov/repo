@@ -1,6 +1,7 @@
 package com.example.tutoria1.Model;
 
 import java.time.LocalDate;
+import java.util.Base64;
 
 import com.example.tutoria1.Enums.VehiculoDocumento.VehiculoDocumentoStatus;
 
@@ -15,6 +16,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -65,4 +68,24 @@ public class VehiculoDocumentoModel {
     @Lob
     @Column(name = "archivo_pdf", columnDefinition = "LONGBLOB")
     private byte[] archivoPdf;
+
+    @PrePersist
+    @PreUpdate
+    private void normalizarArchivos() {
+        if (archivoBase64 == null || archivoBase64.isBlank()) {
+            return;
+        }
+
+        String base64Limpio = archivoBase64
+                .replace("data:application/pdf;base64,", "")
+                .replace("data:application/octet-stream;base64,", "")
+                .trim();
+
+        try {
+            archivoBase64 = base64Limpio;
+            archivoPdf = Base64.getDecoder().decode(base64Limpio);
+        } catch (IllegalArgumentException exception) {
+            throw new IllegalArgumentException("El archivo PDF no tiene un formato Base64 válido", exception);
+        }
+    }
 }

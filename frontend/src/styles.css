@@ -1677,10 +1677,128 @@ h1 {
   overflow-wrap: anywhere;
 }
 
+.expiring-documents {
+  margin-top: 18px;
+}
+
+.expiring-documents-summary {
+  margin-bottom: 12px;
+  padding: 14px 16px;
+  border: 1px solid #f2d18a;
+  border-left: 4px solid #e6a323;
+  border-radius: 10px;
+  background: #fff9eb;
+}
+
+.expiring-documents-summary .eyebrow,
+.expiring-document-heading .eyebrow {
+  margin: 0 0 4px;
+  color: #9a6500;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.expiring-documents-summary h3,
+.expiring-document-heading h4 {
+  margin: 0;
+  color: #27334a;
+  font-family: Manrope, sans-serif;
+}
+
+.expiring-documents-summary h3 {
+  font-size: 16px;
+}
+
+.expiring-documents-summary p:last-child,
+.expiring-document-heading p:not(.eyebrow) {
+  margin: 5px 0 0;
+  color: #68758a;
+  font-size: 12px;
+}
+
+.expiring-documents-list {
+  display: grid;
+  gap: 10px;
+}
+
+.expiring-document-card {
+  padding: 14px 16px;
+  border: 1px solid #f2d18a;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.expiring-document-card.is-expired {
+  border-color: #efb4b4;
+  background: #fff7f7;
+}
+
+.expiring-document-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.expiring-document-heading h4 {
+  font-size: 15px;
+}
+
+.expiring-document-badge {
+  flex: 0 0 auto;
+  padding: 5px 9px;
+  border-radius: 999px;
+  color: #815300;
+  background: #fff0c7;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.is-expired .expiring-document-badge {
+  color: #a32929;
+  background: #ffe2e2;
+}
+
+.expiring-document-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+  margin: 14px 0 0;
+}
+
+.expiring-document-details dt {
+  margin-bottom: 3px;
+  color: #8591a5;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.expiring-document-details dd {
+  margin: 0;
+  color: #3d4b63;
+  font-size: 12px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.expiring-documents-empty {
+  padding: 14px 16px;
+  border: 1px solid #dce5f1;
+  border-radius: 10px;
+  color: #52627a;
+  background: #f7f9fc;
+  font-size: 13px;
+}
+
 @media (max-width: 680px) {
   .data-form-grid,
   .data-group > .data-form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .expiring-document-heading {
+    flex-direction: column;
   }
 
   .form-actions {
