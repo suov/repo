@@ -118,7 +118,7 @@ export const ENDPOINTES_PRIVADOS = [
     id: "vehiculo-crear",
     grupo: "vehiculos",
     titulo: "Registro de vehículo",
-    descripcion: "Registra un vehículo y, opcionalmente, sus documentos.",
+    descripcion: "Registra un vehículo asociando uno o más documentos ya registrados y sus archivos PDF.",
     metodo: "POST",
     ruta: "/api/vehiculos",
     ejemploCuerpo: EJEMPLO_VEHICULO,

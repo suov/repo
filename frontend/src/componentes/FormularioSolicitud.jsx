@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { mensajeDeError, solicitarEndpoint } from "../servicios/api.js";
+import { ENDPOINTES_PRIVADOS } from "../endpoints/privados.js";
 import { GRUPOS_ADMINISTRATIVOS } from "../endpoints/grupos.js";
 import FormularioDatos from "./FormularioDatos.jsx";
 
@@ -21,6 +22,25 @@ function formularioVacio(objeto) {
   return "";
 }
 
+function opcionesParametro(endpoint, nombre) {
+  if (nombre !== "tipoVehiculo") {
+    return null;
+  }
+
+  if (endpoint.id === "documentos-por-tipo-vehiculo") {
+    return [
+      { valor: "A", etiqueta: "A - Automóvil" },
+      { valor: "M", etiqueta: "M - Motocicleta" },
+      { valor: "AM", etiqueta: "AM - Ambos" },
+    ];
+  }
+
+  return [
+    { valor: "AUTOMOVIL", etiqueta: "Automóvil" },
+    { valor: "MOTOCICLETA", etiqueta: "Motocicleta" },
+  ];
+}
+
 export default function FormularioSolicitud({
   endpoint,
   sesion,
@@ -36,6 +56,9 @@ export default function FormularioSolicitud({
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState("");
   const [aviso, setAviso] = useState("");
+  const [documentosDisponibles, setDocumentosDisponibles] = useState([]);
+  const [cargandoDocumentos, setCargandoDocumentos] = useState(false);
+  const [errorDocumentos, setErrorDocumentos] = useState("");
 
   useEffect(() => {
     const precargaActiva = precarga?.endpointId === endpoint.id ? precarga : null;
@@ -50,6 +73,82 @@ export default function FormularioSolicitud({
     alRecibirRespuesta(null);
   }, [endpoint, precarga, alRecibirRespuesta]);
 
+  useEffect(() => {
+    let vigente = true;
+
+    setDocumentosDisponibles([]);
+    setErrorDocumentos("");
+
+    const esFormularioVehiculo = endpoint.id === "vehiculo-crear"
+      || endpoint.id === "vehiculo-actualizar";
+    const esBusquedaVehiculoPorDocumento = endpoint.id === "vehiculos-por-documento";
+
+    if (!esFormularioVehiculo && !esBusquedaVehiculoPorDocumento) {
+      setCargandoDocumentos(false);
+      return () => {
+        vigente = false;
+      };
+    }
+
+    if (!sesion) {
+      setCargandoDocumentos(false);
+      setErrorDocumentos("Inicie sesión para cargar los tipos de documento registrados.");
+      return () => {
+        vigente = false;
+      };
+    }
+
+    const endpointDocumentos = ENDPOINTES_PRIVADOS.find(
+      ({ id }) => id === "documentos-listar",
+    );
+
+    if (!endpointDocumentos) {
+      setCargandoDocumentos(false);
+      setErrorDocumentos("No se encontró el servicio para consultar los documentos registrados.");
+      return () => {
+        vigente = false;
+      };
+    }
+
+    setCargandoDocumentos(true);
+
+    solicitarEndpoint(endpointDocumentos, {
+      valoresRuta: {},
+      valoresConsulta: {},
+      cuerpo: {},
+      sesion,
+    })
+      .then((respuesta) => {
+        if (!respuesta.correcto) {
+          throw new Error(mensajeDeError(respuesta.contenido, respuesta.estado));
+        }
+
+        if (!Array.isArray(respuesta.contenido)) {
+          throw new Error("La API no devolvió una lista válida de documentos.");
+        }
+
+        if (vigente) {
+          setDocumentosDisponibles(respuesta.contenido);
+        }
+      })
+      .catch((errorDeSolicitud) => {
+        if (vigente) {
+          setErrorDocumentos(errorDeSolicitud instanceof TypeError
+            ? "No fue posible conectar con la API para consultar los documentos."
+            : errorDeSolicitud.message);
+        }
+      })
+      .finally(() => {
+        if (vigente) {
+          setCargandoDocumentos(false);
+        }
+      });
+
+    return () => {
+      vigente = false;
+    };
+  }, [endpoint.id, sesion]);
+
   const estaEditando = precarga?.endpointId === endpoint.id;
 
   async function enviarSolicitud(event) {
@@ -59,9 +158,43 @@ export default function FormularioSolicitud({
       return;
     }
 
-    if (endpoint.parametrosRuta?.some(({ nombre }) => !valoresRuta[nombre]?.trim())) {
+    if (endpoint.id === "vehiculos-por-documento" &&
+        (cargandoDocumentos || errorDocumentos)) {
+      setError(errorDocumentos || "Espere a que se carguen los documentos registrados.");
+      return;
+    }
+
+    if (endpoint.parametrosRuta?.some(({ nombre }) => (
+      !String(valoresRuta[nombre] ?? "").trim()
+    ))) {
       setError("ERROR: Complete los datos de la ruta antes de enviar la consulta.");
       return;
+    }
+
+    if (endpoint.id === "vehiculo-crear" || endpoint.id === "vehiculo-actualizar") {
+      if (cargandoDocumentos || errorDocumentos) {
+        setError(errorDocumentos || "Espere a que se carguen los documentos registrados.");
+        return;
+      }
+
+      const documentos = valoresCuerpo.documentos;
+      if (endpoint.id === "vehiculo-crear" &&
+          (!Array.isArray(documentos) || documentos.length === 0)) {
+        setError("Agregue al menos un documento registrado para asociarlo al vehículo.");
+        return;
+      }
+
+      if (Array.isArray(documentos) && documentos.some(({
+        documentoId,
+        archivoBase64,
+        fechaExpedicion,
+        fechaVencimiento,
+      }) => (
+        !documentoId || !archivoBase64 || !fechaExpedicion || !fechaVencimiento
+      ))) {
+        setError("Cada documento debe tener tipo registrado, archivo PDF, fecha de expedición y fecha de vencimiento.");
+        return;
+      }
     }
 
     if (endpoint.metodo === "DELETE" &&
@@ -73,6 +206,7 @@ export default function FormularioSolicitud({
     setError("");
     setAviso("");
     alRecibirRespuesta(null);
+    let vehiculoActualizado = false;
 
     try {
       const respuesta = await solicitarEndpoint(endpoint, {
@@ -89,6 +223,46 @@ export default function FormularioSolicitud({
         return;
       }
 
+      vehiculoActualizado = endpoint.id === "vehiculo-actualizar";
+
+      if (endpoint.id === "vehiculo-actualizar" && valoresCuerpo.documentos?.length) {
+        const endpointDocumentos = ENDPOINTES_PRIVADOS.find(
+          ({ id }) => id === "vehiculo-agregar-documentos",
+        );
+
+        if (!endpointDocumentos) {
+          setError("El vehículo se actualizó, pero no se encontró el servicio para guardar sus documentos.");
+          return;
+        }
+
+        setAviso("Vehículo actualizado. Guardando documentos...");
+        const respuestaDocumentos = await solicitarEndpoint(endpointDocumentos, {
+          valoresRuta: { vehiculoId: valoresRuta.id },
+          valoresConsulta: {},
+          cuerpo: valoresCuerpo.documentos,
+          sesion,
+        });
+        alRecibirRespuesta(respuestaDocumentos);
+
+        if (!respuestaDocumentos.correcto) {
+          setAviso("");
+          setError(`El vehículo se actualizó, pero no fue posible guardar sus documentos: ${
+            mensajeDeError(respuestaDocumentos.contenido, respuestaDocumentos.estado)
+          }`);
+          return;
+        }
+
+        setAviso("Vehículo y documentos guardados correctamente.");
+        return;
+      }
+
+      setAviso(
+        respuesta.contenido?.message
+        || (endpoint.metodo === "PUT"
+          ? "Cambios guardados correctamente."
+          : "Solicitud completada correctamente."),
+      );
+
       if (endpoint.actualizaApiKey) {
 
         const nuevaApiKey = respuesta.contenido?.data?.apikey
@@ -104,9 +278,16 @@ export default function FormularioSolicitud({
 
     } catch (errorDeSolicitud) {
 
-      setError(errorDeSolicitud instanceof TypeError
-        ? "ERROR: No fue posible conectar con la API. Compruebe que el servidor esté activo."
-        : errorDeSolicitud.message);
+      setAviso("");
+      setError(vehiculoActualizado
+        ? `El vehículo se actualizó, pero no fue posible confirmar el guardado de sus documentos. ${
+          errorDeSolicitud instanceof TypeError
+            ? "Compruebe que el servidor esté activo y vuelva a guardar los documentos."
+            : errorDeSolicitud.message
+        }`
+        : errorDeSolicitud instanceof TypeError
+          ? "ERROR: No fue posible conectar con la API. Compruebe que el servidor esté activo."
+          : errorDeSolicitud.message);
 
     } finally {
       setCargando(false);
@@ -134,31 +315,98 @@ export default function FormularioSolicitud({
         {endpoint.parametrosRuta?.map((parametro) => (
           <label className="field" key={parametro.nombre}>
             <span>{parametro.etiqueta}</span>
-            <input
-              required
-              autoComplete="off"
-              placeholder={`Ej. ${parametro.ejemplo}`}
-              value={valoresRuta[parametro.nombre] || ""}
-              onChange={(event) => setValoresRuta((valores) => ({
-                ...valores,
-                [parametro.nombre]: event.target.value,
-              }))}
-            />
+            {endpoint.id === "vehiculos-por-documento" &&
+            parametro.nombre === "codigoDocumento" ? (
+              <>
+                <select
+                  required
+                  disabled={cargandoDocumentos || Boolean(errorDocumentos) || documentosDisponibles.length === 0}
+                  value={valoresRuta[parametro.nombre] || ""}
+                  onChange={(event) => setValoresRuta((valores) => ({
+                    ...valores,
+                    [parametro.nombre]: event.target.value,
+                  }))}
+                >
+                  <option value="">
+                    {cargandoDocumentos
+                      ? "Cargando documentos..."
+                      : documentosDisponibles.length
+                        ? "Seleccione un documento registrado"
+                        : "No hay documentos registrados"}
+                  </option>
+                  {[...new Map(documentosDisponibles
+                    .filter((documento) => documento.codigoDocumentoParametrizado)
+                    .map((documento) => [
+                      documento.codigoDocumentoParametrizado,
+                      documento,
+                    ])).values()]
+                    .map((documento) => (
+                      <option
+                        key={documento.id}
+                        value={documento.codigoDocumentoParametrizado}
+                      >
+                        {documento.codigoDocumentoParametrizado} - {documento.nombreDocumento}
+                      </option>
+                    ))}
+                </select>
+                {errorDocumentos && <small role="alert">{errorDocumentos}</small>}
+              </>
+            ) : opcionesParametro(endpoint, parametro.nombre) ? (
+              <select
+                required
+                value={valoresRuta[parametro.nombre] || ""}
+                onChange={(event) => setValoresRuta((valores) => ({
+                  ...valores,
+                  [parametro.nombre]: event.target.value,
+                }))}
+              >
+                <option value="">Seleccione una opción</option>
+                {opcionesParametro(endpoint, parametro.nombre).map(({ valor, etiqueta }) => (
+                  <option key={valor} value={valor}>{etiqueta}</option>
+                ))}
+              </select>
+            ) : (
+              <input
+                required
+                autoComplete="off"
+                placeholder={`Ej. ${parametro.ejemplo}`}
+                value={valoresRuta[parametro.nombre] || ""}
+                onChange={(event) => setValoresRuta((valores) => ({
+                  ...valores,
+                  [parametro.nombre]: event.target.value,
+                }))}
+              />
+            )}
           </label>
         ))}
 
         {endpoint.parametrosConsulta?.map((parametro) => (
           <label className="field" key={parametro.nombre}>
             <span>{parametro.etiqueta} <small>Parámetro de consulta</small></span>
-            <input
-              autoComplete="off"
-              placeholder={`Ej. ${parametro.ejemplo}`}
-              value={valoresConsulta[parametro.nombre] || ""}
-              onChange={(event) => setValoresConsulta((valores) => ({
-                ...valores,
-                [parametro.nombre]: event.target.value,
-              }))}
-            />
+            {opcionesParametro(endpoint, parametro.nombre) ? (
+              <select
+                value={valoresConsulta[parametro.nombre] || ""}
+                onChange={(event) => setValoresConsulta((valores) => ({
+                  ...valores,
+                  [parametro.nombre]: event.target.value,
+                }))}
+              >
+                <option value="">Seleccione una opción</option>
+                {opcionesParametro(endpoint, parametro.nombre).map(({ valor, etiqueta }) => (
+                  <option key={valor} value={valor}>{etiqueta}</option>
+                ))}
+              </select>
+            ) : (
+              <input
+                autoComplete="off"
+                placeholder={`Ej. ${parametro.ejemplo}`}
+                value={valoresConsulta[parametro.nombre] || ""}
+                onChange={(event) => setValoresConsulta((valores) => ({
+                  ...valores,
+                  [parametro.nombre]: event.target.value,
+                }))}
+              />
+            )}
           </label>
         ))}
 
@@ -167,7 +415,24 @@ export default function FormularioSolicitud({
             <p className="form-section-title">
               {estaEditando ? "Datos del registro" : "Complete los datos"}
             </p>
-            <FormularioDatos valores={valoresCuerpo} alCambiar={setValoresCuerpo} />
+            {(endpoint.id === "vehiculo-crear" || endpoint.id === "vehiculo-actualizar") && (
+              <p className="form-help">
+                {cargandoDocumentos
+                  ? "Cargando tipos de documento registrados..."
+                  : errorDocumentos
+                    ? errorDocumentos
+                    : documentosDisponibles.length === 0
+                      ? "No hay tipos de documento registrados. Créelos primero desde Documentos."
+                      : estaEditando
+                        ? "Edite las fechas de vencimiento o reemplace el PDF. Los documentos se guardan después de actualizar el vehículo."
+                        : "Seleccione documentos ya registrados y adjunte el PDF de cada uno."}
+              </p>
+            )}
+            <FormularioDatos
+              valores={valoresCuerpo}
+              alCambiar={setValoresCuerpo}
+              opcionesDocumentos={documentosDisponibles}
+            />
           </div>
         )}
 

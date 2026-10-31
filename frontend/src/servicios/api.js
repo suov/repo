@@ -67,7 +67,7 @@ export async function autenticar({ usuario, contrasena }) {
 export async function solicitarEndpoint(endpoint, { valoresRuta, valoresConsulta, cuerpo, sesion }) {
 
   const ruta = endpoint.ruta.replace(/:([A-Za-z0-9_]+)/g, (_, nombre) => {
-    const valor = valoresRuta[nombre]?.trim();
+    const valor = String(valoresRuta[nombre] ?? "").trim();
     return valor ? encodeURIComponent(valor) : `:${nombre}`;
   });
 

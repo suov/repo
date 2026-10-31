@@ -92,10 +92,21 @@ export default function PanelServicios({
 
     setGrupoActivo(endpointEditar.grupo);
     setEndpointId(endpointEditar.id);
+    const cuerpo = datosParaEditar(endpointEditar.ejemploCuerpo, registro);
+    if (endpointEditar.id === "vehiculo-actualizar" && Array.isArray(registro.documentos)) {
+      cuerpo.documentos = registro.documentos.map((documento) => ({
+        documentoId: documento.documentoId,
+        nombreArchivo: documento.nombreArchivo || "",
+        archivoBase64: documento.archivoBase64 || documento.archivoPdfBase64 || "",
+        fechaExpedicion: documento.fechaExpedicion || "",
+        fechaVencimiento: documento.fechaVencimiento || "",
+      }));
+    }
+
     setPrecarga({
       endpointId: endpointEditar.id,
       valoresRuta,
-      cuerpo: datosParaEditar(endpointEditar.ejemploCuerpo, registro),
+      cuerpo,
     });
     setRespuesta(null);
   }
