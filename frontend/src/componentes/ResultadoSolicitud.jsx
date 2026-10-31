@@ -73,6 +73,8 @@ export default function ResultadoSolicitud({ endpoint, respuesta, alEditar }) {
             <TarjetaResultado
               key={registro.id ?? indice}
               registro={registro}
+              mostrarApiKey={endpoint.grupo === "usuarios"}
+              esConductorHabilitado={endpoint.id === "conductores-habilitados"}
               alEditar={alEditar ? () => alEditar(registro) : null}
             />
           ))}

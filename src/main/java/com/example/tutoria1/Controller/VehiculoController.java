@@ -305,6 +305,7 @@ public class VehiculoController {
                     .trim();
 
             try {
+                vehiculoDocumento.setArchivoBase64(limpio);
                 byte[] archivoPdf = Base64.getDecoder()
                         .decode(limpio);
 

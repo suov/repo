@@ -21,7 +21,9 @@ function etiqueta(nombre) {
     tipoCombustible: "Tipo de combustible",
     tipoVehiculoAlQueAplica: "Tipo de vehículo al que aplica",
     requisitoSegunTipoVehiculo: "Requisito según tipo de vehículo",
-    licenciaConduccionBase64: "Licencia de conducción (Base64)",
+    idVehiculo: "Vehículo (placa)",
+    idPersona: "Conductor",
+    licenciaConduccionBase64: "Licencia de conducción (PDF)",
     fechaVigenciaLicencia: "Vigencia de la licencia",
     capacidadPasajeros: "Capacidad de pasajeros",
     colorHexadecimal: "Color (código hexadecimal)",
@@ -87,6 +89,9 @@ function crearCampos(
   establecerError,
   opcionesDocumentos,
   documentosSeleccionados,
+  opcionesVehiculos,
+  opcionesConductores,
+  esAsociacionConductorVehiculo,
 ) {
   if (!datos || typeof datos !== "object") {
     return null;
@@ -106,6 +111,9 @@ function crearCampos(
                 establecerError,
                 opcionesDocumentos,
                 documentosSeleccionados,
+                opcionesVehiculos,
+                opcionesConductores,
+                esAsociacionConductorVehiculo,
               )
               : (
                 <label className="field">
@@ -169,6 +177,9 @@ function crearCampos(
                     establecerError,
                     opcionesDocumentos,
                     valor,
+                    opcionesVehiculos,
+                    opcionesConductores,
+                    esAsociacionConductorVehiculo,
                   )
                   : (
                     <label className="field">
@@ -221,6 +232,9 @@ function crearCampos(
             establecerError,
             opcionesDocumentos,
             documentosSeleccionados,
+            opcionesVehiculos,
+            opcionesConductores,
+            esAsociacionConductorVehiculo,
           )}
         </fieldset>
       );
@@ -228,9 +242,17 @@ function crearCampos(
 
     const opciones = OPCIONES[nombre];
     const tipo = tipoDeCampo(nombre, valor);
-    const esCampoArchivo = nombre === "archivoBase64" || nombre === "archivoPdfBase64";
-    const esDocumento = rutaActual[0] === "documentos";
-    const esSelectorDocumento = esDocumento && nombre === "documentoId";
+    const esCampoArchivo = nombre === "archivoBase64"
+      || nombre === "archivoPdfBase64"
+      || nombre === "licenciaConduccionBase64";
+    const esDocumento = rutaActual[0] === "documentos"
+      || (rutaActual.length > 1 && typeof rutaActual[0] === "number");
+    const esSelectorDocumento = nombre === "documentoId" && esDocumento;
+    const opcionesAsociacion = esAsociacionConductorVehiculo && nombre === "idVehiculo"
+      ? opcionesVehiculos
+      : esAsociacionConductorVehiculo && nombre === "idPersona"
+        ? opcionesConductores
+        : null;
     const indiceDocumento = Number(rutaActual[1]);
     const idsEnUso = new Set(documentosSeleccionados
       .filter((_, indice) => indice !== indiceDocumento)
@@ -277,6 +299,25 @@ function crearCampos(
                 </option>
               ))}
           </select>
+        ) : opcionesAsociacion ? (
+          <select
+            required
+            value={valor ?? ""}
+            disabled={opcionesAsociacion.length === 0}
+            onChange={(evento) => alCambiar(
+              rutaActual,
+              evento.target.value ? Number(evento.target.value) : "",
+            )}
+          >
+            <option value="">
+              {opcionesAsociacion.length
+                ? "Seleccione una opción"
+                : "No hay opciones disponibles"}
+            </option>
+            {opcionesAsociacion.map((opcion) => (
+              <option key={opcion.id} value={opcion.id}>{opcion.etiqueta}</option>
+            ))}
+          </select>
         ) : esCampoArchivo ? (
           <>
             <input
@@ -302,12 +343,16 @@ function crearCampos(
                     return;
                   }
 
+                  const separadorBase64 = lector.result.indexOf(",");
+                  const archivoBase64 = separadorBase64 >= 0
+                    ? lector.result.slice(separadorBase64 + 1)
+                    : lector.result;
                   const rutaDocumento = rutaActual.slice(0, -1);
-                  alCambiar(rutaActual, lector.result);
+                  alCambiar(rutaActual, archivoBase64);
                   alCambiar([...rutaDocumento, "nombreArchivo"], archivo.name);
 
                   if (nombre === "archivoPdfBase64") {
-                    alCambiar([...rutaDocumento, "archivoBase64"], lector.result);
+                    alCambiar([...rutaDocumento, "archivoBase64"], archivoBase64);
                   }
 
                   establecerError("");
@@ -329,7 +374,8 @@ function crearCampos(
         ) : (
           <input
             type={tipo}
-            required={esDocumento && !valor}
+            required={(esDocumento && !valor) ||
+              (esAsociacionConductorVehiculo && nombre === "fechaAsociacion")}
             step={tipo === "number" ? "any" : undefined}
             value={valor ?? ""}
             onChange={(evento) => alCambiar(
@@ -349,16 +395,23 @@ export default function FormularioDatos({
   valores,
   alCambiar,
   opcionesDocumentos = [],
+  opcionesVehiculos = [],
+  opcionesConductores = [],
+  esAsociacionConductorVehiculo = false,
 }) {
   const [errorArchivo, establecerError] = useState("");
-  const documentos = Array.isArray(valores?.documentos) ? valores.documentos : [];
+  const documentos = Array.isArray(valores)
+    ? valores
+    : Array.isArray(valores?.documentos)
+      ? valores.documentos
+      : [];
 
   return (
     <>
       <div className="data-form-grid">
         {crearCampos(valores, [], (ruta, valor) => alCambiar((actuales) => (
           cambiarEnRuta(actuales, ruta, valor)
-        )), establecerError, opcionesDocumentos, documentos)}
+        )), establecerError, opcionesDocumentos, documentos, opcionesVehiculos, opcionesConductores, esAsociacionConductorVehiculo)}
       </div>
       {errorArchivo && <p className="error-message" role="alert">{errorArchivo}</p>}
     </>

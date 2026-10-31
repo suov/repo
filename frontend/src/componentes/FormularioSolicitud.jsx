@@ -23,6 +23,15 @@ function formularioVacio(objeto) {
 }
 
 function opcionesParametro(endpoint, nombre) {
+  if (endpoint.id === "vehiculos-por-estado-documento" &&
+      nombre === "estadoDocumento") {
+    return [
+      { valor: "HABILITADO", etiqueta: "Habilitado" },
+      { valor: "VENCIDO", etiqueta: "Vencido" },
+      { valor: "EN_VERIFICACION", etiqueta: "En verificación" },
+    ];
+  }
+
   if (nombre !== "tipoVehiculo") {
     return null;
   }
@@ -39,6 +48,25 @@ function opcionesParametro(endpoint, nombre) {
     { valor: "AUTOMOVIL", etiqueta: "Automóvil" },
     { valor: "MOTOCICLETA", etiqueta: "Motocicleta" },
   ];
+}
+
+function fechaLocalActual() {
+  const hoy = new Date();
+  const mes = String(hoy.getMonth() + 1).padStart(2, "0");
+  const dia = String(hoy.getDate()).padStart(2, "0");
+  return `${hoy.getFullYear()}-${mes}-${dia}`;
+}
+
+function registrosDe(respuesta) {
+  if (Array.isArray(respuesta.contenido)) {
+    return respuesta.contenido;
+  }
+
+  if (Array.isArray(respuesta.contenido?.data)) {
+    return respuesta.contenido.data;
+  }
+
+  throw new Error("La API no devolvió una lista válida.");
 }
 
 export default function FormularioSolicitud({
@@ -59,7 +87,12 @@ export default function FormularioSolicitud({
   const [documentosDisponibles, setDocumentosDisponibles] = useState([]);
   const [cargandoDocumentos, setCargandoDocumentos] = useState(false);
   const [errorDocumentos, setErrorDocumentos] = useState("");
+  const [vehiculosDisponibles, setVehiculosDisponibles] = useState([]);
+  const [conductoresDisponibles, setConductoresDisponibles] = useState([]);
+  const [cargandoOpcionesAsociacion, setCargandoOpcionesAsociacion] = useState(false);
+  const [errorOpcionesAsociacion, setErrorOpcionesAsociacion] = useState("");
 
+  /* Precarga de información */
   useEffect(() => {
     const precargaActiva = precarga?.endpointId === endpoint.id ? precarga : null;
     setValoresRuta({
@@ -67,7 +100,13 @@ export default function FormularioSolicitud({
       ...precargaActiva?.valoresRuta,
     });
     setValoresConsulta(valoresIniciales(endpoint.parametrosConsulta));
-    setValoresCuerpo(precargaActiva?.cuerpo || formularioVacio(endpoint.ejemploCuerpo));
+    const cuerpoInicial = precargaActiva?.cuerpo
+      ? { ...precargaActiva.cuerpo }
+      : formularioVacio(endpoint.ejemploCuerpo);
+    if (endpoint.id === "asociaciones-crear" && !precargaActiva?.cuerpo?.fechaAsociacion) {
+      cuerpoInicial.fechaAsociacion = fechaLocalActual();
+    }
+    setValoresCuerpo(cuerpoInicial);
     setError("");
     setAviso("");
     alRecibirRespuesta(null);
@@ -75,12 +114,105 @@ export default function FormularioSolicitud({
 
   useEffect(() => {
     let vigente = true;
+    setVehiculosDisponibles([]);
+    setConductoresDisponibles([]);
+    setErrorOpcionesAsociacion("");
+
+    if (endpoint.id !== "asociaciones-crear") {
+      setCargandoOpcionesAsociacion(false);
+      return () => {
+        vigente = false;
+      };
+    }
+
+    if (!sesion) {
+      setCargandoOpcionesAsociacion(false);
+      setErrorOpcionesAsociacion("Inicie sesión para cargar vehículos y conductores registrados.");
+      return () => {
+        vigente = false;
+      };
+    }
+
+    const endpointVehiculos = ENDPOINTES_PRIVADOS.find(({ id }) => id === "vehiculos-listar");
+    const endpointPersonas = ENDPOINTES_PRIVADOS.find(({ id }) => id === "personas-listar");
+    if (!endpointVehiculos || !endpointPersonas) {
+      setCargandoOpcionesAsociacion(false);
+      setErrorOpcionesAsociacion("No se encontraron los servicios para cargar vehículos y personas.");
+      return () => {
+        vigente = false;
+      };
+    }
+
+    setCargandoOpcionesAsociacion(true);
+    Promise.all([
+      solicitarEndpoint(endpointVehiculos, {
+        valoresRuta: {},
+        valoresConsulta: {},
+        cuerpo: {},
+        sesion,
+      }),
+      solicitarEndpoint(endpointPersonas, {
+        valoresRuta: {},
+        valoresConsulta: {},
+        cuerpo: {},
+        sesion,
+      }),
+    ])
+      .then(([respuestaVehiculos, respuestaPersonas]) => {
+        if (!respuestaVehiculos.correcto) {
+          throw new Error(`No fue posible cargar los vehículos: ${
+            mensajeDeError(respuestaVehiculos.contenido, respuestaVehiculos.estado)
+          }`);
+        }
+        if (!respuestaPersonas.correcto) {
+          throw new Error(`No fue posible cargar las personas: ${
+            mensajeDeError(respuestaPersonas.contenido, respuestaPersonas.estado)
+          }`);
+        }
+
+        const vehiculos = registrosDe(respuestaVehiculos);
+        const personas = registrosDe(respuestaPersonas);
+
+        if (vigente) {
+          setVehiculosDisponibles(vehiculos
+            .filter((vehiculo) => vehiculo.id !== undefined && vehiculo.placa)
+            .map((vehiculo) => ({ id: vehiculo.id, etiqueta: vehiculo.placa })));
+          setConductoresDisponibles(personas
+            .filter((persona) => persona.id !== undefined && persona.tipoPersona === "C")
+            .map((persona) => ({
+              id: persona.id,
+              etiqueta: [persona.nombre, persona.apellido].filter(Boolean).join(" "),
+            })));
+        }
+      })
+      .catch((errorDeSolicitud) => {
+        if (vigente) {
+          setErrorOpcionesAsociacion(errorDeSolicitud instanceof TypeError
+            ? "No fue posible conectar con la API para cargar vehículos y conductores."
+            : errorDeSolicitud.message);
+        }
+      })
+      .finally(() => {
+        if (vigente) {
+          setCargandoOpcionesAsociacion(false);
+        }
+      });
+
+    return () => {
+      vigente = false;
+    };
+  }, [endpoint.id, sesion]);
+
+  /* Valida que la sesión no haya expirado */
+  useEffect(() => {
+    let vigente = true;
 
     setDocumentosDisponibles([]);
     setErrorDocumentos("");
 
     const esFormularioVehiculo = endpoint.id === "vehiculo-crear"
-      || endpoint.id === "vehiculo-actualizar";
+      || endpoint.id === "vehiculo-actualizar"
+      || endpoint.id === "vehiculo-agregar-documentos";
     const esBusquedaVehiculoPorDocumento = endpoint.id === "vehiculos-por-documento";
 
     if (!esFormularioVehiculo && !esBusquedaVehiculoPorDocumento) {
@@ -161,6 +293,12 @@ export default function FormularioSolicitud({
     if (endpoint.id === "vehiculos-por-documento" &&
         (cargandoDocumentos || errorDocumentos)) {
       setError(errorDocumentos || "Espere a que se carguen los documentos registrados.");
+      return;
+    }
+
+    if (endpoint.id === "asociaciones-crear" &&
+        (cargandoOpcionesAsociacion || errorOpcionesAsociacion)) {
+      setError(errorOpcionesAsociacion || "Espere a que se carguen los vehículos y conductores.");
       return;
     }
 
@@ -415,7 +553,9 @@ export default function FormularioSolicitud({
             <p className="form-section-title">
               {estaEditando ? "Datos del registro" : "Complete los datos"}
             </p>
-            {(endpoint.id === "vehiculo-crear" || endpoint.id === "vehiculo-actualizar") && (
+            {(endpoint.id === "vehiculo-crear"
+              || endpoint.id === "vehiculo-actualizar"
+              || endpoint.id === "vehiculo-agregar-documentos") && (
               <p className="form-help">
                 {cargandoDocumentos
                   ? "Cargando tipos de documento registrados..."
@@ -423,15 +563,33 @@ export default function FormularioSolicitud({
                     ? errorDocumentos
                     : documentosDisponibles.length === 0
                       ? "No hay tipos de documento registrados. Créelos primero desde Documentos."
+                      : endpoint.id === "vehiculo-agregar-documentos"
+                        ? "Seleccione un tipo documental ya creado (por ejemplo, SOAT); el identificador del vehículo se ingresa arriba."
                       : estaEditando
                         ? "Edite las fechas de vencimiento o reemplace el PDF. Los documentos se guardan después de actualizar el vehículo."
                         : "Seleccione documentos ya registrados y adjunte el PDF de cada uno."}
+              </p>
+            )}
+            {endpoint.id === "asociaciones-crear" && (
+              <p className="form-help">
+                {cargandoOpcionesAsociacion
+                  ? "Cargando vehículos y conductores..."
+                  : errorOpcionesAsociacion
+                    ? errorOpcionesAsociacion
+                    : vehiculosDisponibles.length === 0
+                        ? "No hay vehículos registrados disponibles."
+                        : conductoresDisponibles.length === 0
+                          ? "No hay personas de tipo conductor registradas."
+                          : "Seleccione la placa y el conductor. La fecha de asociación inicia en hoy, pero puede editarla."}
               </p>
             )}
             <FormularioDatos
               valores={valoresCuerpo}
               alCambiar={setValoresCuerpo}
               opcionesDocumentos={documentosDisponibles}
+              opcionesVehiculos={vehiculosDisponibles}
+              opcionesConductores={conductoresDisponibles}
+              esAsociacionConductorVehiculo={endpoint.id === "asociaciones-crear"}
             />
           </div>
         )}
@@ -444,7 +602,7 @@ export default function FormularioSolicitud({
 
         {endpoint.acceso === "privado" && GRUPOS_ADMINISTRATIVOS.has(endpoint.grupo) && (
           <p className="permission-note">
-            Para administrar estos datos, el usuario debe tener tipo de persona A.
+            Está en modo administrador
           </p>
         )}
 
