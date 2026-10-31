@@ -5,28 +5,40 @@ import { GRUPOS_ADMINISTRATIVOS } from "../endpoints/grupos.js";
 import FormularioDatos from "./FormularioDatos.jsx";
 
 function valoresIniciales(parametros = []) {
-  return Object.fromEntries(
-    parametros.map(({ nombre, valorInicial }) => [
-      nombre,
-      valorInicial || "",
-    ]),
-  );
+  const valores = {};
+
+  for (const parametro of parametros) {
+    valores[parametro.nombre] = parametro.valorInicial || "";
+  }
+
+  return valores;
 }
 
 function formularioVacio(objeto) {
+  // Si el valor es una lista, dejamos cada elemento en blanco.
   if (Array.isArray(objeto)) {
-    return objeto.map(formularioVacio);
+    const listaVacia = [];
+
+    for (const elemento of objeto) {
+      listaVacia.push(formularioVacio(elemento));
+    }
+
+    return listaVacia;
   }
 
+  // Si el valor es un objeto, conservamos sus propiedades
+  // y dejamos sus valores internos en blanco.
   if (objeto && typeof objeto === "object") {
-    return Object.fromEntries(
-      Object.entries(objeto).map(([nombre, valor]) => [
-        nombre,
-        formularioVacio(valor),
-      ]),
-    );
+    const objetoVacio = {};
+
+    for (const nombre in objeto) {
+      objetoVacio[nombre] = formularioVacio(objeto[nombre]);
+    }
+
+    return objetoVacio;
   }
 
+  // Los valores simples comienzan como texto vacío.
   return "";
 }
 
@@ -74,10 +86,12 @@ function fechaLocalActual() {
 }
 
 function registrosDe(respuesta) {
+  // Algunas respuestas de la API traen la lista directamente.
   if (Array.isArray(respuesta.contenido)) {
     return respuesta.contenido;
   }
 
+  // Otras respuestas incluyen la lista dentro de la propiedad "data".
   if (Array.isArray(respuesta.contenido?.data)) {
     return respuesta.contenido.data;
   }
@@ -174,24 +188,43 @@ function selectorDeRegistro(endpointId) {
 }
 
 function cuerpoDesdeRegistro(ejemplo, registro) {
+  // Cuando el ejemplo es una lista, recorremos los elementos del registro.
   if (Array.isArray(ejemplo)) {
-    return ejemplo.length > 0 && Array.isArray(registro)
-      ? registro.map((item) => cuerpoDesdeRegistro(ejemplo[0], item))
-      : [];
+    const lista = [];
+
+    if (ejemplo.length > 0 && Array.isArray(registro)) {
+      for (const item of registro) {
+        lista.push(cuerpoDesdeRegistro(ejemplo[0], item));
+      }
+    }
+
+    return lista;
   }
 
+  // Cuando el ejemplo es un objeto, revisamos cada una de sus propiedades.
   if (ejemplo && typeof ejemplo === "object") {
-    return Object.fromEntries(
-      Object.entries(ejemplo).map(([nombre, valor]) => [
-        nombre,
-        registro?.[nombre] === undefined
-          ? valor
-          : cuerpoDesdeRegistro(valor, registro[nombre]),
-      ]),
-    );
+    const cuerpo = {};
+
+    for (const nombre in ejemplo) {
+      const valorEjemplo = ejemplo[nombre];
+      const valorRegistro = registro?.[nombre];
+
+      if (valorRegistro === undefined) {
+        cuerpo[nombre] = valorEjemplo;
+      } else {
+        cuerpo[nombre] = cuerpoDesdeRegistro(valorEjemplo, valorRegistro);
+      }
+    }
+
+    return cuerpo;
   }
 
-  return registro === undefined || registro === null ? ejemplo : registro;
+  // Para valores simples, usamos el dato del registro si existe.
+  if (registro === undefined || registro === null) {
+    return ejemplo;
+  }
+
+  return registro;
 }
 
 function cuerpoVehiculoDesdeRegistro(ejemplo, vehiculo) {
@@ -347,6 +380,9 @@ export default function FormularioSolicitud({
     };
   }, [endpoint.id, sesion]);
 
+  // useMemo conserva la misma configuración mientras endpoint.id no cambie.
+  // Esto evita que el useEffect que depende de configuracionSelector
+  // vuelva a ejecutarse en cada renderizado.
   const configuracionSelector = useMemo(
     () => selectorDeRegistro(endpoint.id),
     [endpoint.id],
