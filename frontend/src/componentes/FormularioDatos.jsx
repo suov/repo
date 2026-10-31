@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 
 const OPCIONES = {
@@ -23,6 +24,8 @@ function etiqueta(nombre) {
     requisitoSegunTipoVehiculo: "Requisito según tipo de vehículo",
     idVehiculo: "Vehículo (placa)",
     idPersona: "Conductor",
+    conductorId: "Conductor",
+    vehiculoId: "Vehículo",
     licenciaConduccionBase64: "Licencia de conducción (PDF)",
     fechaVigenciaLicencia: "Vigencia de la licencia",
     capacidadPasajeros: "Capacidad de pasajeros",
@@ -69,6 +72,7 @@ function cambiarEnRuta(objeto, ruta, valor) {
   const [parte, ...resto] = ruta;
   const copia = Array.isArray(objeto) ? [...objeto] : { ...objeto };
   copia[parte] = cambiarEnRuta(copia[parte], resto, valor);
+
   return copia;
 }
 
@@ -92,6 +96,7 @@ function crearCampos(
   opcionesVehiculos,
   opcionesConductores,
   esAsociacionConductorVehiculo,
+  esRegistroTrayectoRuta,
 ) {
   if (!datos || typeof datos !== "object") {
     return null;
@@ -101,8 +106,12 @@ function crearCampos(
     return (
       <div className="array-list">
         {datos.map((elemento, indice) => (
-          <fieldset className="data-group" key={`${ruta.join(".")}-${indice}`}>
+          <fieldset
+            className="data-group"
+            key={`${ruta.join(".")}-${indice}`}
+          >
             <legend>Elemento {indice + 1}</legend>
+
             {elemento && typeof elemento === "object"
               ? crearCampos(
                 elemento,
@@ -114,6 +123,7 @@ function crearCampos(
                 opcionesVehiculos,
                 opcionesConductores,
                 esAsociacionConductorVehiculo,
+                esRegistroTrayectoRuta,
               )
               : (
                 <label className="field">
@@ -127,6 +137,7 @@ function crearCampos(
                   />
                 </label>
               )}
+
             <button
               className="secondary-button"
               type="button"
@@ -139,6 +150,7 @@ function crearCampos(
             </button>
           </fieldset>
         ))}
+
         {datos.length > 0 && (
           <button
             className="secondary-button"
@@ -158,6 +170,14 @@ function crearCampos(
   return Object.entries(datos).map(([nombre, valor]) => {
     const rutaActual = [...ruta, nombre];
 
+    // En el registro de trayectos no necesitamos coordenadas.
+    if (
+      esRegistroTrayectoRuta
+      && (nombre === "latitud" || nombre === "longitud")
+    ) {
+      return null;
+    }
+
     if (Array.isArray(valor)) {
       const ejemplo = valor[0];
       const plantilla = ejemplo || PLANTILLAS_ARRAY[nombre];
@@ -165,10 +185,18 @@ function crearCampos(
       return (
         <fieldset className="data-group" key={rutaActual.join(".")}>
           <legend>{etiqueta(nombre)}</legend>
+
           {valor.length === 0
-            ? <p className="form-help">Agregue documentos registrados para asociarlos a este vehículo.</p>
+            ? (
+              <p className="form-help">
+                Agregue documentos registrados para asociarlos a este vehículo.
+              </p>
+            )
             : valor.map((elemento, indice) => (
-              <div className="array-item" key={`${rutaActual.join(".")}-${indice}`}>
+              <div
+                className="array-item"
+                key={`${rutaActual.join(".")}-${indice}`}
+              >
                 {typeof elemento === "object" && elemento !== null
                   ? crearCampos(
                     elemento,
@@ -180,6 +208,7 @@ function crearCampos(
                     opcionesVehiculos,
                     opcionesConductores,
                     esAsociacionConductorVehiculo,
+                    esRegistroTrayectoRuta,
                   )
                   : (
                     <label className="field">
@@ -193,6 +222,7 @@ function crearCampos(
                       />
                     </label>
                   )}
+
                 <button
                   className="secondary-button"
                   type="button"
@@ -205,6 +235,7 @@ function crearCampos(
                 </button>
               </div>
             ))}
+
           {plantilla && (
             <button
               className="secondary-button"
@@ -225,6 +256,7 @@ function crearCampos(
       return (
         <fieldset className="data-group" key={rutaActual.join(".")}>
           <legend>{etiqueta(nombre)}</legend>
+
           {crearCampos(
             valor,
             rutaActual,
@@ -235,6 +267,7 @@ function crearCampos(
             opcionesVehiculos,
             opcionesConductores,
             esAsociacionConductorVehiculo,
+            esRegistroTrayectoRuta,
           )}
         </fieldset>
       );
@@ -242,37 +275,69 @@ function crearCampos(
 
     const opciones = OPCIONES[nombre];
     const tipo = tipoDeCampo(nombre, valor);
+
     const esCampoArchivo = nombre === "archivoBase64"
       || nombre === "archivoPdfBase64"
       || nombre === "licenciaConduccionBase64";
+
     const esDocumento = rutaActual[0] === "documentos"
       || (rutaActual.length > 1 && typeof rutaActual[0] === "number");
+
     const esSelectorDocumento = nombre === "documentoId" && esDocumento;
-    const opcionesAsociacion = esAsociacionConductorVehiculo && nombre === "idVehiculo"
-      ? opcionesVehiculos
-      : esAsociacionConductorVehiculo && nombre === "idPersona"
-        ? opcionesConductores
-        : null;
+
+    // Selectores que ya existían para las asociaciones.
+    const opcionesAsociacion =
+      esAsociacionConductorVehiculo && nombre === "idVehiculo"
+        ? opcionesVehiculos
+        : esAsociacionConductorVehiculo && nombre === "idPersona"
+          ? opcionesConductores
+          : null;
+
+    // Nuevos selectores para registrar trayectos.
+    const opcionesTrayecto =
+      esRegistroTrayectoRuta && nombre === "vehiculoId"
+        ? opcionesVehiculos
+        : esRegistroTrayectoRuta && nombre === "conductorId"
+          ? opcionesConductores
+          : null;
+
     const indiceDocumento = Number(rutaActual[1]);
-    const idsEnUso = new Set(documentosSeleccionados
-      .filter((_, indice) => indice !== indiceDocumento)
-      .map((documento) => String(documento.documentoId)));
+
+    const idsEnUso = new Set(
+      documentosSeleccionados
+        .filter((_, indice) => indice !== indiceDocumento)
+        .map((documento) => String(documento.documentoId)),
+    );
 
     return (
       <label className="field" key={rutaActual.join(".")}>
         <span>{etiqueta(nombre)}</span>
+
         {opciones ? (
           <select
             value={valor ?? ""}
-            onChange={(evento) => alCambiar(rutaActual, evento.target.value)}
+            onChange={(evento) => alCambiar(
+              rutaActual,
+              evento.target.value,
+            )}
           >
             <option value="">Seleccione una opción</option>
+
             {opciones.map((opcion) => {
               const separador = opcion.indexOf(" - ");
-              const codigo = separador === -1 ? opcion : opcion.slice(0, separador);
-              const descripcion = separador === -1 ? opcion : opcion.slice(separador + 3);
+              const codigo = separador === -1
+                ? opcion
+                : opcion.slice(0, separador);
 
-              return <option key={codigo} value={codigo}>{descripcion}</option>;
+              const descripcion = separador === -1
+                ? opcion
+                : opcion.slice(separador + 3);
+
+              return (
+                <option key={codigo} value={codigo}>
+                  {descripcion}
+                </option>
+              );
             })}
           </select>
         ) : esSelectorDocumento ? (
@@ -290,12 +355,16 @@ function crearCampos(
                 ? "Seleccione un documento registrado"
                 : "No hay documentos registrados disponibles"}
             </option>
+
             {opcionesDocumentos
-              .filter((documento) => !idsEnUso.has(String(documento.id)) ||
-                String(documento.id) === String(valor))
+              .filter((documento) =>
+                !idsEnUso.has(String(documento.id))
+                || String(documento.id) === String(valor))
               .map((documento) => (
                 <option key={documento.id} value={documento.id}>
-                  {documento.codigoDocumentoParametrizado} - {documento.nombreDocumento}
+                  {documento.codigoDocumentoParametrizado}
+                  {" - "}
+                  {documento.nombreDocumento}
                 </option>
               ))}
           </select>
@@ -314,8 +383,33 @@ function crearCampos(
                 ? "Seleccione una opción"
                 : "No hay opciones disponibles"}
             </option>
+
             {opcionesAsociacion.map((opcion) => (
-              <option key={opcion.id} value={opcion.id}>{opcion.etiqueta}</option>
+              <option key={opcion.id} value={opcion.id}>
+                {opcion.etiqueta}
+              </option>
+            ))}
+          </select>
+        ) : opcionesTrayecto ? (
+          <select
+            required
+            value={valor ?? ""}
+            disabled={opcionesTrayecto.length === 0}
+            onChange={(evento) => alCambiar(
+              rutaActual,
+              evento.target.value ? Number(evento.target.value) : "",
+            )}
+          >
+            <option value="">
+              {opcionesTrayecto.length
+                ? "Seleccione una opción"
+                : "No hay opciones disponibles"}
+            </option>
+
+            {opcionesTrayecto.map((opcion) => (
+              <option key={opcion.id} value={opcion.id}>
+                #{opcion.id} - {opcion.etiqueta}
+              </option>
             ))}
           </select>
         ) : esCampoArchivo ? (
@@ -326,47 +420,74 @@ function crearCampos(
               required={esDocumento && !valor}
               onChange={(evento) => {
                 const archivo = evento.target.files?.[0];
+
                 if (!archivo) {
                   return;
                 }
 
-                if (archivo.type !== "application/pdf" && !archivo.name.toLowerCase().endsWith(".pdf")) {
+                if (
+                  archivo.type !== "application/pdf"
+                  && !archivo.name.toLowerCase().endsWith(".pdf")
+                ) {
                   establecerError("Seleccione un archivo PDF.");
                   evento.target.value = "";
                   return;
                 }
 
                 const lector = new FileReader();
+
                 lector.onload = () => {
                   if (typeof lector.result !== "string") {
-                    establecerError("No fue posible leer el archivo seleccionado.");
+                    establecerError(
+                      "No fue posible leer el archivo seleccionado.",
+                    );
                     return;
                   }
 
                   const separadorBase64 = lector.result.indexOf(",");
+
                   const archivoBase64 = separadorBase64 >= 0
                     ? lector.result.slice(separadorBase64 + 1)
                     : lector.result;
+
                   const rutaDocumento = rutaActual.slice(0, -1);
+
                   alCambiar(rutaActual, archivoBase64);
-                  alCambiar([...rutaDocumento, "nombreArchivo"], archivo.name);
+
+                  alCambiar(
+                    [...rutaDocumento, "nombreArchivo"],
+                    archivo.name,
+                  );
 
                   if (nombre === "archivoPdfBase64") {
-                    alCambiar([...rutaDocumento, "archivoBase64"], archivoBase64);
+                    alCambiar(
+                      [...rutaDocumento, "archivoBase64"],
+                      archivoBase64,
+                    );
                   }
 
                   establecerError("");
                 };
-                lector.onerror = () => establecerError("No fue posible leer el archivo seleccionado.");
+
+                lector.onerror = () => establecerError(
+                  "No fue posible leer el archivo seleccionado.",
+                );
+
                 lector.readAsDataURL(archivo);
               }}
             />
+
             {valor && (
               <small>
-                {rutaActual[0] === "documentos" ? "Archivo actual guardado." : "Ya hay un archivo cargado."}
-                {rutaActual[0] === "documentos" && rutaActual[1] !== undefined
+                {rutaActual[0] === "documentos"
+                  ? "Archivo actual guardado."
+                  : "Ya hay un archivo cargado."}
+
+                {rutaActual[0] === "documentos"
+                  && rutaActual[1] !== undefined
                   ? ` ${documentosSeleccionados[Number(rutaActual[1])]?.nombreArchivo || ""}`
                   : ""}
+
                 {" "}Seleccione otro para reemplazarlo.
               </small>
             )}
@@ -398,8 +519,10 @@ export default function FormularioDatos({
   opcionesVehiculos = [],
   opcionesConductores = [],
   esAsociacionConductorVehiculo = false,
+  esRegistroTrayectoRuta = false,
 }) {
   const [errorArchivo, establecerError] = useState("");
+
   const documentos = Array.isArray(valores)
     ? valores
     : Array.isArray(valores?.documentos)
@@ -409,11 +532,27 @@ export default function FormularioDatos({
   return (
     <>
       <div className="data-form-grid">
-        {crearCampos(valores, [], (ruta, valor) => alCambiar((actuales) => (
-          cambiarEnRuta(actuales, ruta, valor)
-        )), establecerError, opcionesDocumentos, documentos, opcionesVehiculos, opcionesConductores, esAsociacionConductorVehiculo)}
+        {crearCampos(
+          valores,
+          [],
+          (ruta, valor) => alCambiar((actuales) => (
+            cambiarEnRuta(actuales, ruta, valor)
+          )),
+          establecerError,
+          opcionesDocumentos,
+          documentos,
+          opcionesVehiculos,
+          opcionesConductores,
+          esAsociacionConductorVehiculo,
+          esRegistroTrayectoRuta,
+        )}
       </div>
-      {errorArchivo && <p className="error-message" role="alert">{errorArchivo}</p>}
+
+      {errorArchivo && (
+        <p className="error-message" role="alert">
+          {errorArchivo}
+        </p>
+      )}
     </>
   );
 }
