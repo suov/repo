@@ -4,7 +4,9 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.query.Procedure;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import com.example.tutoria1.Dto.Trayecto.Response.RutaConductorResponseDto;
 import com.example.tutoria1.Enums.VehiculoDocumento.VehiculoDocumentoStatus;
@@ -12,6 +14,7 @@ import com.example.tutoria1.Enums.VehiculoPersona.EstadoConductor;
 import com.example.tutoria1.Model.PersonaModel;
 import com.example.tutoria1.Model.TrayectoModel;
 
+@Repository ("ITrayectoRepository")
 public interface TrayectoRepository extends JpaRepository<TrayectoModel, Long> {
 
     List<TrayectoModel> findByCodigoRutaOrderByOrdenParadaAsc(
@@ -49,4 +52,24 @@ public interface TrayectoRepository extends JpaRepository<TrayectoModel, Long> {
             """)
     List<RutaConductorResponseDto> consultarCodigoRutaYConductorPorPlaca(
             @Param("placa") String placa);
+
+    // Procedimientos almacenados para el cargue masivo de trayectos
+        @Procedure(name = "CARGAR_TRAYECTOS_EXCEL")
+        void CARGAR_TRAYECTOS_EXCEL(
+                String personaId,
+                String vehiculoId,
+                String codigoRuta,
+                String ubicacion,
+                String ordenParada,
+                String latitud,
+                String longitud,
+                String loginUsuario,
+                Double idCargue
+        );
+
+        @Procedure(name = "VALIDAR_TRAYECTOS_CARGUE")
+        void VALIDAR_TRAYECTOS_CARGUE(Double idCargue);
+
+        @Procedure(name = "PROCESAR_TRAYECTOS_EXCEL")
+void PROCESAR_TRAYECTOS_EXCEL(Double idCargue);
 }
