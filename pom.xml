@@ -91,6 +91,12 @@
 			<artifactId>jackson-databind</artifactId>
 		</dependency>
 
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>3.2.0</version>
+        </dependency>
+
     </dependencies>
 
     <build>

@@ -58,6 +58,8 @@ public class WebSecurityConfig {
 			.csrf((csrf) -> csrf.disable())
 			.authorizeHttpRequests(authz -> authz
 					.requestMatchers(Constans.LOGIN_URL).permitAll() //OK
+					.requestMatchers("/api-docs/**").permitAll()
+					.requestMatchers("/swagger-ui/**").permitAll()
 					.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 					.requestMatchers("/persona/total-por-tipo").permitAll() //OK
 					.requestMatchers("/api/vehiculos/estadoDocumento/**").permitAll() //OK

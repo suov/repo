@@ -19,8 +19,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @RestController
 @RequestMapping("/api/vehiculos")
+@Tag(name = "Vehículos", description = "Operaciones relacionadas con la gestión de vehículos y sus documentos")
 public class VehiculoController {
 
     private final VehiculoService vehiculoService;
@@ -29,6 +39,25 @@ public class VehiculoController {
         this.vehiculoService = vehiculoService;
     }
 
+    @Operation(
+        summary = "Crear vehículo",
+        description = "Registra un nuevo vehículo en el sistema."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "201",
+            description = "Vehículo creado correctamente",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ApiResponseDTO.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Los datos enviados para crear el vehículo no son válidos",
+            content = @Content
+        )
+    })
     @PostMapping
     public ResponseEntity<Object> crearVehiculo(
             @RequestBody VehiculoRequestDto vehiculoRequest
@@ -48,6 +77,22 @@ public class VehiculoController {
                 );
     }
 
+    @Operation(
+        summary = "Listar vehículos",
+        description = "Obtiene todos los vehículos registrados en el sistema."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Lista de vehículos obtenida correctamente",
+            content = @Content(
+                mediaType = "application/json",
+                array = @ArraySchema(
+                    schema = @Schema(implementation = VehiculoResponseDto.class)
+                )
+            )
+        )
+    })
     @GetMapping
     public List<VehiculoResponseDto> listarVehiculos() {
 
@@ -57,8 +102,31 @@ public class VehiculoController {
                 .collect(Collectors.toList());
     }
 
+    @Operation(
+        summary = "Buscar vehículo por placa",
+        description = "Consulta la información de un vehículo utilizando su placa."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Vehículo encontrado",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = VehiculoResponseDto.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Vehículo no encontrado",
+            content = @Content
+        )
+    })
     @GetMapping("/placa/{placa}")
     public ResponseEntity<Object> buscarVehiculoPorPlaca(
+            @Parameter(
+                description = "Placa del vehículo que se desea consultar",
+                example = "ABC123"
+            )
             @PathVariable String placa
     ) {
 
@@ -72,8 +140,33 @@ public class VehiculoController {
         return ResponseEntity.ok(convertirAResponse(vehiculo));
     }
 
+    @Operation(
+        summary = "Buscar vehículos por tipo",
+        description = "Obtiene los vehículos que corresponden al tipo de vehículo indicado."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Vehículos encontrados",
+            content = @Content(
+                mediaType = "application/json",
+                array = @ArraySchema(
+                    schema = @Schema(implementation = VehiculoResponseDto.class)
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "No se encuentran vehículos de ese tipo",
+            content = @Content
+        )
+    })
     @GetMapping("/tipo/{tipoVehiculo}")
     public ResponseEntity<Object> buscarVehiculosPorTipoVehiculo(
+            @Parameter(
+                description = "Tipo de vehículo que se desea consultar",
+                example = "M"
+            )
             @PathVariable String tipoVehiculo
     ) {
 
@@ -94,8 +187,33 @@ public class VehiculoController {
         );
     }
 
+    @Operation(
+        summary = "Buscar vehículos por tipo de documento",
+        description = "Consulta los vehículos que tienen asociado un documento del código indicado."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Vehículos encontrados",
+            content = @Content(
+                mediaType = "application/json",
+                array = @ArraySchema(
+                    schema = @Schema(implementation = VehiculoResponseDto.class)
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "No se encuentran vehículos con ese tipo de documento asociado",
+            content = @Content
+        )
+    })
     @GetMapping("/tipoDocumento/{codigoDocumento}")
     public ResponseEntity<Object> buscarVehiculosPorTipoDocumento(
+            @Parameter(
+                description = "Código del tipo de documento que se desea consultar",
+                example = "SOAT"
+            )
             @PathVariable String codigoDocumento
     ) {
 
@@ -116,9 +234,33 @@ public class VehiculoController {
         );
     }
 
+    @Operation(
+        summary = "Agregar documentos a un vehículo",
+        description = "Asocia uno o varios documentos al vehículo identificado por su ID."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "201",
+            description = "Documentos asociados al vehículo correctamente",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ApiResponseDTO.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "No se enviaron documentos o los datos del archivo no son válidos",
+            content = @Content
+        )
+    })
     @PostMapping("/{vehiculoId}/documentos")
     public ResponseEntity<Object> agregarDocumentos(
+            @Parameter(
+                description = "Identificador del vehículo al que se asociarán los documentos",
+                example = "1"
+            )
             @PathVariable Long vehiculoId,
+
             @RequestBody List<VehiculoDocumentoRequestDto> documentosRequest
     ) {
 
@@ -146,8 +288,33 @@ public class VehiculoController {
                 );
     }
 
+    @Operation(
+        summary = "Buscar vehículos por estado de documento",
+        description = "Obtiene los vehículos que tienen documentos asociados con el estado indicado."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Vehículos encontrados",
+            content = @Content(
+                mediaType = "application/json",
+                array = @ArraySchema(
+                    schema = @Schema(implementation = VehiculoResponseDto.class)
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "No se encuentran vehículos con documentos en ese estado",
+            content = @Content
+        )
+    })
     @GetMapping("/estadoDocumento/{estadoDocumento}")
     public ResponseEntity<Object> buscarVehiculosPorEstadoDocumento(
+            @Parameter(
+                description = "Estado del documento que se desea consultar",
+                example = "VENCIDO"
+            )
             @PathVariable String estadoDocumento
     ) {
 
@@ -168,8 +335,31 @@ public class VehiculoController {
         );
     }
 
+    @Operation(
+        summary = "Obtener vehículo por ID",
+        description = "Consulta la información de un vehículo utilizando su identificador."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Vehículo obtenido correctamente",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = VehiculoResponseDto.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "No se encontró el vehículo solicitado",
+            content = @Content
+        )
+    })
     @GetMapping("/{id}")
     public VehiculoResponseDto obtenerVehiculoPorId(
+            @Parameter(
+                description = "Identificador del vehículo",
+                example = "1"
+            )
             @PathVariable Long id
     ) {
 
@@ -178,9 +368,38 @@ public class VehiculoController {
         );
     }
 
+    @Operation(
+        summary = "Actualizar vehículo",
+        description = "Actualiza la información del vehículo identificado por su ID."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Vehículo actualizado correctamente",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = VehiculoResponseDto.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Los datos enviados para actualizar el vehículo no son válidos",
+            content = @Content
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "No se encontró el vehículo que se desea actualizar",
+            content = @Content
+        )
+    })
     @PutMapping("/{id}")
     public VehiculoResponseDto actualizarVehiculo(
+            @Parameter(
+                description = "Identificador del vehículo que se actualizará",
+                example = "1"
+            )
             @PathVariable Long id,
+
             @RequestBody VehiculoRequestDto vehiculoRequest
     ) {
 
@@ -192,8 +411,31 @@ public class VehiculoController {
         );
     }
 
+    @Operation(
+        summary = "Eliminar vehículo",
+        description = "Elimina el vehículo identificado por su ID y devuelve la información del vehículo eliminado."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Vehículo eliminado correctamente",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ApiResponseDTO.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "No se encontró el vehículo que se desea eliminar",
+            content = @Content
+        )
+    })
     @DeleteMapping("/{id}")
     public ResponseEntity<Object> eliminarVehiculo(
+            @Parameter(
+                description = "Identificador del vehículo que se eliminará",
+                example = "1"
+            )
             @PathVariable Long id
     ) {
 
@@ -212,8 +454,36 @@ public class VehiculoController {
     }
 
     /* TUTORÍA 2 */
+
+    @Operation(
+        summary = "Buscar vehículos con documentos próximos a vencer",
+        description = "Obtiene los vehículos que tienen documentos cuya fecha de vencimiento " +
+                      "es anterior al límite calculado a partir de la cantidad de días indicada. " +
+                      "Si no se especifica el parámetro, se utilizan 30 días."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Vehículos con documentos próximos a vencer encontrados",
+            content = @Content(
+                mediaType = "application/json",
+                array = @ArraySchema(
+                    schema = @Schema(implementation = VehiculoResponseDto.class)
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "No se encuentran vehículos con documentos por vencer",
+            content = @Content
+        )
+    })
     @GetMapping("/por-vencer")
     public ResponseEntity<Object> buscarVehiculosPorVencer(
+            @Parameter(
+                description = "Cantidad de días que se utilizará para calcular el límite de vencimiento",
+                example = "30"
+            )
             @RequestParam(defaultValue = "30") Integer dias
     ) {
 
@@ -225,30 +495,61 @@ public class VehiculoController {
                 .toList();
 
         if (vehiculos.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encuentran vehículos con documentos por vencer");
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "No se encuentran vehículos con documentos por vencer"
+            );
         }
 
-        return ResponseEntity.ok(vehiculos.stream().map(this::convertirAResponse).collect(Collectors.toList()));
+        return ResponseEntity.ok(
+                vehiculos.stream()
+                        .map(this::convertirAResponse)
+                        .collect(Collectors.toList())
+        );
     }
 
+    @Operation(
+        summary = "Buscar vehículos con documentos vencidos",
+        description = "Obtiene los vehículos que tienen documentos asociados cuyo estado es VENCIDO."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Vehículos con documentos vencidos encontrados",
+            content = @Content(
+                mediaType = "application/json",
+                array = @ArraySchema(
+                    schema = @Schema(implementation = VehiculoResponseDto.class)
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "No se encuentran vehículos con documentos vencidos",
+            content = @Content
+        )
+    })
     @GetMapping("/vencidos")
     public ResponseEntity<Object> buscarVehiculosVencidos() {
 
         List<VehiculoModel> vehiculos = vehiculoService.consultarVehiculosPorEstadoDocumento("VENCIDO");
 
         if (vehiculos.isEmpty()) {
-                throw new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "No se encuentran vehículos con documentos vencidos"
-                );
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "No se encuentran vehículos con documentos vencidos"
+            );
         }
 
-        return ResponseEntity.ok(vehiculos.stream()
-                .map(this::convertirAResponse)
-                .collect(Collectors.toList()));
+        return ResponseEntity.ok(
+                vehiculos.stream()
+                        .map(this::convertirAResponse)
+                        .collect(Collectors.toList())
+        );
     }
 
     /* MAPPERS */
+
     private VehiculoModel convertirAModelo(
             VehiculoRequestDto dto
     ) {
@@ -294,6 +595,7 @@ public class VehiculoController {
         vehiculoDocumento.setFechaVencimiento(dto.getFechaVencimiento());
 
         String base64Pdf = dto.getArchivoBase64();
+
         if ((base64Pdf == null || base64Pdf.isBlank()) && dto.getArchivoPdfBase64() != null) {
             base64Pdf = dto.getArchivoPdfBase64();
         }
@@ -306,10 +608,12 @@ public class VehiculoController {
 
             try {
                 vehiculoDocumento.setArchivoBase64(limpio);
+
                 byte[] archivoPdf = Base64.getDecoder()
                         .decode(limpio);
 
                 vehiculoDocumento.setArchivoPdf(archivoPdf);
+
             } catch (IllegalArgumentException exception) {
                 throw new IllegalArgumentException(
                         "El archivo PDF no tiene un formato Base64 válido"
@@ -381,6 +685,7 @@ public class VehiculoController {
                     .encodeToString(modelo.getArchivoPdf());
 
             dto.setArchivoPdfBase64(archivoPdfBase64);
+
         } else if (modelo.getArchivoBase64() != null && !modelo.getArchivoBase64().isBlank()) {
             dto.setArchivoPdfBase64(modelo.getArchivoBase64());
         }
