@@ -54,22 +54,27 @@ public interface TrayectoRepository extends JpaRepository<TrayectoModel, Long> {
             @Param("placa") String placa);
 
     // Procedimientos almacenados para el cargue masivo de trayectos
-        @Procedure(name = "CARGAR_TRAYECTOS_EXCEL")
-        void CARGAR_TRAYECTOS_EXCEL(
-                String personaId,
-                String vehiculoId,
-                String codigoRuta,
-                String ubicacion,
-                String ordenParada,
-                String latitud,
-                String longitud,
-                String loginUsuario,
-                Double idCargue
-        );
 
-        @Procedure(name = "VALIDAR_TRAYECTOS_CARGUE")
-        void VALIDAR_TRAYECTOS_CARGUE(Double idCargue);
+    @Procedure(procedureName = "CARGAR_TRAYECTOS_EXCEL")
+    void CARGAR_TRAYECTOS_EXCEL(
+        @Param("pPersonaId") String personaId,
+        @Param("pVehiculoId") String vehiculoId,
+        @Param("pCodigoRuta") String codigoRuta,
+        @Param("pUbicacion") String ubicacion,
+        @Param("pOrdenParada") String ordenParada,
+        @Param("pLatitud") String latitud,
+        @Param("pLongitud") String longitud,
+        @Param("pLoginUsuario") String loginUsuario,
+        @Param("pIdCargue") Double idCargue
+    );
 
-        @Procedure(name = "PROCESAR_TRAYECTOS_EXCEL")
-void PROCESAR_TRAYECTOS_EXCEL(Double idCargue);
+    @Procedure(procedureName = "VALIDAR_TRAYECTOS_CARGUE")
+    void VALIDAR_TRAYECTOS_CARGUE(
+        @Param("pIdCargue") Double idCargue
+    );
+
+    @Procedure(procedureName = "PROCESAR_TRAYECTOS_EXCEL")
+    void PROCESAR_TRAYECTOS_EXCEL(
+        @Param("pIdCargue") Double idCargue
+    );
 }
