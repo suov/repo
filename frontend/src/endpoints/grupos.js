@@ -4,6 +4,7 @@ export const GRUPOS_ENDPOINTES = [
   { id: "vehiculos", nombre: "Vehículos", icono: "▱" },
   { id: "documentos", nombre: "Documentos", icono: "▤" },
   { id: "asociaciones", nombre: "Asociaciones", icono: "⇄" },
+  { id: "cargues", nombre: "Cargues", icono: "▣" },
   { id: "usuarios", nombre: "Usuarios", icono: "◉" },
 ];
 

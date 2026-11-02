@@ -112,6 +112,35 @@ google.maps.api-key=${GOOGLE_MAPS_API_KEY:}
 
 Si la base de datos se corre en otro puerto o con otro usuario, se deben ajustar estos valores antes de levantar la API.
 
+#### Notificaciones de restricción con RabbitMQ y correo
+
+Cuando la tarea programada detecta que venció la licencia de un conductor, cambia a `RO` únicamente las asociaciones que aún no estaban restringidas y publica una notificación en RabbitMQ. El consumidor envía un correo con el conductor, los vehículos y las rutas relacionadas. Si el envío falla, RabbitMQ deriva el mensaje a `conductor.restriction.notifications.dlq`.
+
+RabbitMQ se configura por defecto en `localhost:5672` con el usuario `guest`. Se puede ajustar mediante estas variables de entorno:
+
+```properties
+RABBITMQ_HOST=localhost
+RABBITMQ_PORT=5672
+RABBITMQ_USERNAME=guest
+RABBITMQ_PASSWORD=
+RABBITMQ_RESTRICTION_QUEUE=conductor.restriction.notifications
+```
+
+El envío de correo está desactivado hasta configurar un servidor SMTP. Para habilitarlo, define las credenciales fuera del repositorio y activa `EMAIL_NOTIFICATIONS_ENABLED`:
+
+```properties
+EMAIL_NOTIFICATIONS_ENABLED=true
+MAIL_HOST=
+MAIL_PORT=587
+MAIL_USERNAME=
+MAIL_PASSWORD=
+MAIL_FROM=
+MAIL_SMTP_AUTH=true
+MAIL_SMTP_STARTTLS=true
+```
+
+No guardes contraseñas SMTP en `application.properties` ni en el repositorio. Con el correo desactivado, las notificaciones quedan en la cola hasta que se configure y active el consumidor.
+
 ### 5.2 Frontend (React + Vite)
 
 Requisitos:

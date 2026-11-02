@@ -39,6 +39,17 @@ public interface TrayectoRepository extends JpaRepository<TrayectoModel, Long> {
     List<TrayectoModel> findByConductor(PersonaModel conductor);
 
     @Query("""
+            SELECT DISTINCT t.codigoRuta
+            FROM TrayectoModel t
+            WHERE t.conductor.id = :idConductor
+                AND t.vehiculo.id = :idVehiculo
+            ORDER BY t.codigoRuta
+            """)
+    List<String> consultarRutasPorConductorYVehiculo(
+            @Param("idConductor") Long idConductor,
+            @Param("idVehiculo") Long idVehiculo);
+
+    @Query("""
             SELECT DISTINCT new com.example.tutoria1.Dto.Trayecto.Response.RutaConductorResponseDto(
                 t.codigoRuta,
                 c.id,

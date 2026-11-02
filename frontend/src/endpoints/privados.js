@@ -69,6 +69,20 @@ export const ENDPOINTES_PRIVADOS = [
     },
     acceso: "privado",
   },
+  {
+    id: "cargues-consultar",
+    grupo: "cargues",
+    titulo: "Consultar cargue",
+    descripcion: "Consulte todas las filas y el estado de validación de un cargue de Excel.",
+    metodo: "GET",
+    ruta: "/api/trayectos/cargues/:idCargue",
+    parametrosRuta: [{
+      nombre: "idCargue",
+      etiqueta: "Identificador del cargue",
+      ejemplo: "202611010047",
+    }],
+    acceso: "privado",
+  },
 
   /* Personas */
   {

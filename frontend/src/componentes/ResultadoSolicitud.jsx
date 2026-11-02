@@ -123,6 +123,74 @@ function ResultadoRuta({ paradas }) {
   );
 }
 
+function ResultadoCargues({ registros }) {
+  function mostrar(valor) {
+    return valor === null || valor === undefined || valor === ""
+      ? "Sin información"
+      : String(valor);
+  }
+
+  if (registros.length === 0) {
+    return (
+      <p className="cargues-empty">
+        No hay filas para el identificador de cargue consultado.
+      </p>
+    );
+  }
+
+  return (
+    <section className="cargues-results" aria-label="Filas del cargue">
+      <div className="cargues-summary">
+        <div>
+          <p className="eyebrow">RESULTADOS DEL CARGUE</p>
+          <h3>{registros.length} {registros.length === 1 ? "registro" : "registros"}</h3>
+        </div>
+        <span className="cargues-summary-id">
+          Cargue {mostrar(registros[0].idCargue)}
+        </span>
+      </div>
+
+      <div className="cargues-card-grid">
+        {registros.map((registro, indice) => {
+          const estado = mostrar(registro.estado);
+          const estadoClase = estado.toLowerCase().replace(/[^a-z0-9-]/g, "-");
+
+          return (
+            <article
+              className="cargue-card"
+              key={registro.id ?? `${registro.idCargue}-${indice}`}
+            >
+              <header className="cargue-card-heading">
+                <div>
+                  <p className="eyebrow">REGISTRO #{mostrar(registro.id)}</p>
+                  <h3>{mostrar(registro.codigoRuta)}</h3>
+                </div>
+                <span className={`cargue-status cargue-status-${estadoClase}`}>
+                  {estado}
+                </span>
+              </header>
+
+              <p className="cargue-location">{mostrar(registro.ubicacion)}</p>
+
+              <dl className="cargue-details">
+                <div><dt>Persona</dt><dd>{mostrar(registro.personaId)}</dd></div>
+                <div><dt>Vehículo</dt><dd>{mostrar(registro.vehiculoId)}</dd></div>
+                <div><dt>Orden de parada</dt><dd>{mostrar(registro.ordenParada)}</dd></div>
+                <div><dt>Coordenadas</dt><dd>{mostrar(registro.latitud)} · {mostrar(registro.longitud)}</dd></div>
+                <div><dt>Usuario</dt><dd>{mostrar(registro.loginUsuario)}</dd></div>
+                <div className="cargue-observation">
+                  <dt>Observación</dt>
+                  <dd>{mostrar(registro.observacion)}</dd>
+                </div>
+              </dl>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 export default function ResultadoSolicitud({ endpoint, respuesta, alEditar }) {
   if (!respuesta) {
     return null;
@@ -133,6 +201,7 @@ export default function ResultadoSolicitud({ endpoint, respuesta, alEditar }) {
     && Array.isArray(respuesta.contenido)
     && respuesta.contenido.length > 0;
   const esConsultaPorVencer = endpoint.id === "vehiculos-por-vencer";
+  const esConsultaCargue = endpoint.id === "cargues-consultar";
 
   const contenido = respuesta.contenido;
   const registros = Array.isArray(contenido)
@@ -179,7 +248,11 @@ export default function ResultadoSolicitud({ endpoint, respuesta, alEditar }) {
           diasConsulta={respuesta.diasConsulta}
         />
       )}
+      {respuesta.correcto && esConsultaCargue && (
+        <ResultadoCargues registros={registros} />
+      )}
       {respuesta.correcto && !esConsultaPorVencer && registros.length > 0 && (
+        !esConsultaCargue &&
         <div className="record-grid">
           {registros.map((registro, indice) => (
             <TarjetaResultado

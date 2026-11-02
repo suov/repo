@@ -35,63 +35,6 @@ public class ExcelService implements IExcelService {
     private static final Logger logger =
             org.apache.logging.log4j.LogManager.getLogger(ExcelService.class);
 
-    @Override
-    public List<CargueResponseDto> consultarCargue(Double idCargue) {
-        return ITrayectoRepository.consultarRegistrosPorIdCargue(idCargue)
-                .stream()
-                .map(this::convertirRegistroCargue)
-                .toList();
-    }
-
-    private CargueResponseDto convertirRegistroCargue(Object[] registro) {
-        return new CargueResponseDto(
-                convertirLong(registro[0]),
-                convertirTexto(registro[1]),
-                convertirTexto(registro[2]),
-                convertirTexto(registro[3]),
-                convertirTexto(registro[4]),
-                convertirEntero(registro[5]),
-                convertirDecimal(registro[6]),
-                convertirDecimal(registro[7]),
-                convertirTexto(registro[8]),
-                convertirTexto(registro[9]),
-                convertirTexto(registro[10]),
-                convertirDouble(registro[11]));
-    }
-
-    private String convertirTexto(Object valor) {
-        return valor == null ? null : valor.toString();
-    }
-
-    private Long convertirLong(Object valor) {
-        String valorNumerico = obtenerValorNumerico(valor);
-        return valorNumerico == null ? null : Long.valueOf(valorNumerico);
-    }
-
-    private Integer convertirEntero(Object valor) {
-        String valorNumerico = obtenerValorNumerico(valor);
-        return valorNumerico == null ? null : Integer.valueOf(valorNumerico);
-    }
-
-    private BigDecimal convertirDecimal(Object valor) {
-        String valorNumerico = obtenerValorNumerico(valor);
-        return valorNumerico == null ? null : new BigDecimal(valorNumerico);
-    }
-
-    private Double convertirDouble(Object valor) {
-        String valorNumerico = obtenerValorNumerico(valor);
-        return valorNumerico == null ? null : Double.valueOf(valorNumerico);
-    }
-
-    private String obtenerValorNumerico(Object valor) {
-        if (valor == null) {
-            return null;
-        }
-
-        String texto = valor.toString().trim();
-        return texto.isEmpty() ? null : texto;
-    }
-
     // ========== PROCESAMIENTO DEL ARCHIVO EXCEL ==========
 
     public void processExcel(MultipartFile file, String loginUsuario) {
@@ -262,5 +205,63 @@ public class ExcelService implements IExcelService {
 
             return false;
         }
+    }
+
+    // ========== LEER DATOS ==========
+    @Override
+    public List<CargueResponseDto> consultarCargue(Double idCargue) {
+        return ITrayectoRepository.consultarRegistrosPorIdCargue(idCargue)
+                .stream()
+                .map(this::convertirRegistroCargue)
+                .toList();
+    }
+
+    private CargueResponseDto convertirRegistroCargue(Object[] registro) {
+        return new CargueResponseDto(
+                convertirLong(registro[0]),
+                convertirTexto(registro[1]),
+                convertirTexto(registro[2]),
+                convertirTexto(registro[3]),
+                convertirTexto(registro[4]),
+                convertirEntero(registro[5]),
+                convertirDecimal(registro[6]),
+                convertirDecimal(registro[7]),
+                convertirTexto(registro[8]),
+                convertirTexto(registro[9]),
+                convertirTexto(registro[10]),
+                convertirDouble(registro[11]));
+    }
+
+    private String convertirTexto(Object valor) {
+        return valor == null ? null : valor.toString();
+    }
+
+    private Long convertirLong(Object valor) {
+        String valorNumerico = obtenerValorNumerico(valor);
+        return valorNumerico == null ? null : Long.valueOf(valorNumerico);
+    }
+
+    private Integer convertirEntero(Object valor) {
+        String valorNumerico = obtenerValorNumerico(valor);
+        return valorNumerico == null ? null : Integer.valueOf(valorNumerico);
+    }
+
+    private BigDecimal convertirDecimal(Object valor) {
+        String valorNumerico = obtenerValorNumerico(valor);
+        return valorNumerico == null ? null : new BigDecimal(valorNumerico);
+    }
+
+    private Double convertirDouble(Object valor) {
+        String valorNumerico = obtenerValorNumerico(valor);
+        return valorNumerico == null ? null : Double.valueOf(valorNumerico);
+    }
+
+    private String obtenerValorNumerico(Object valor) {
+        if (valor == null) {
+            return null;
+        }
+
+        String texto = valor.toString().trim();
+        return texto.isEmpty() ? null : texto;
     }
 }

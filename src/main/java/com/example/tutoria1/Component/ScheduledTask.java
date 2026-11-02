@@ -2,15 +2,20 @@ package com.example.tutoria1.Component;
 
 import java.time.LocalDate;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.tutoria1.APIs.GoogleMaps.Geocoder;
+import com.example.tutoria1.Dto.Notificacion.RestriccionConductorEvent;
 import com.example.tutoria1.Enums.Persona.TipoPersona;
 import com.example.tutoria1.Enums.VehiculoDocumento.VehiculoDocumentoStatus;
 import com.example.tutoria1.Enums.VehiculoPersona.EstadoConductor;
@@ -18,6 +23,7 @@ import com.example.tutoria1.Model.PersonaModel;
 import com.example.tutoria1.Model.TrayectoModel;
 import com.example.tutoria1.Model.VehiculoDocumentoModel;
 import com.example.tutoria1.Model.VehiculoPersonaModel;
+import com.example.tutoria1.Service.RestrictionNotificationPublisher;
 import com.example.tutoria1.repository.PersonaRepository;
 import com.example.tutoria1.repository.TrayectoRepository;
 import com.example.tutoria1.repository.VehiculoDocumentoRepository;
@@ -42,21 +48,26 @@ public class ScheduledTask {
     @Qualifier ("ITrayectoRepository")
     private final TrayectoRepository trayectoRepository;
 
+    private final RestrictionNotificationPublisher notificationPublisher;
+
     ScheduledTask(
         PersonaRepository personaRepository,
         VehiculoPersonaRepository vehiculoPersonaRepository,
         VehiculoDocumentoRepository vehiculoDocumentoRepository,
         TrayectoRepository trayectoRepository,
-        Geocoder geocoder
+        Geocoder geocoder,
+        RestrictionNotificationPublisher notificationPublisher
     ) {
         this.personaRepository = personaRepository;
         this.vehiculoPersonaRepository = vehiculoPersonaRepository;
         this.vehiculoDocumentoRepository = vehiculoDocumentoRepository;
         this.trayectoRepository = trayectoRepository;
         this.geocoder = geocoder;
+        this.notificationPublisher = notificationPublisher;
     }
 
     @Scheduled (cron = "0 */2 * * * *")
+    @Transactional
     public void scheduleTaskWithCronExpression(){
 
         LocalDate hoy = LocalDate.now();
@@ -72,11 +83,42 @@ public class ScheduledTask {
                 List<VehiculoPersonaModel> vehiculosPersona = 
                     vehiculoPersonaRepository.findByPersonaId(persona.getId());
 
-                for (VehiculoPersonaModel vehiculoPersona : vehiculosPersona){
-                    vehiculoPersona.setEstadoConductor(EstadoConductor.RO);
+                List<VehiculoPersonaModel> asociacionesRestringidas =
+                        vehiculosPersona.stream()
+                                .filter(asociacion ->
+                                        asociacion.getEstadoConductor()
+                                                != EstadoConductor.RO)
+                                .toList();
+
+                if (asociacionesRestringidas.isEmpty()) {
+                    continue;
                 }
 
-                vehiculoPersonaRepository.saveAll(vehiculosPersona);
+                Set<String> placas = new LinkedHashSet<>();
+                Set<String> rutas = new LinkedHashSet<>();
+
+                for (VehiculoPersonaModel asociacion
+                        : asociacionesRestringidas) {
+                    asociacion.setEstadoConductor(EstadoConductor.RO);
+                    placas.add(asociacion.getVehiculo().getPlaca());
+                    rutas.addAll(
+                            trayectoRepository
+                                    .consultarRutasPorConductorYVehiculo(
+                                            persona.getId(),
+                                            asociacion.getVehiculo().getId()));
+                }
+
+                vehiculoPersonaRepository.saveAll(asociacionesRestringidas);
+
+                notificationPublisher.publicar(
+                        new RestriccionConductorEvent(
+                                persona.getId(),
+                                persona.getNombre() + " "
+                                        + persona.getApellido(),
+                                persona.getEmail(),
+                                new ArrayList<>(placas),
+                                new ArrayList<>(rutas),
+                                persona.getFechaVigenciaLicencia().toString()));
             }
         }
 
