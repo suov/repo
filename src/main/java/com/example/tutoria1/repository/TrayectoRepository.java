@@ -54,7 +54,6 @@ public interface TrayectoRepository extends JpaRepository<TrayectoModel, Long> {
             @Param("placa") String placa);
 
     // Procedimientos almacenados para el cargue masivo de trayectos
-
     @Procedure(procedureName = "CARGAR_TRAYECTOS_EXCEL")
     void CARGAR_TRAYECTOS_EXCEL(
         @Param("pPersonaId") String personaId,
@@ -77,4 +76,15 @@ public interface TrayectoRepository extends JpaRepository<TrayectoModel, Long> {
     void PROCESAR_TRAYECTOS_EXCEL(
         @Param("pIdCargue") Double idCargue
     );
+
+    @Query(value = """
+            SELECT id, persona_id, vehiculo_id, codigo_ruta, ubicacion,
+                   orden_parada, latitud, longitud, login_usuario, estado,
+                   observacion, id_cargue
+            FROM trayecto_tmp
+            WHERE id_cargue = :idCargue
+            ORDER BY id
+            """, nativeQuery = true)
+    List<Object[]> consultarRegistrosPorIdCargue(
+            @Param("idCargue") Double idCargue);
 }
