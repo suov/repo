@@ -30,11 +30,15 @@ export function mensajeDeError(respuesta, estado) {
       return "La API key no coincide con la de este usuario. Revísela o vuelva a iniciar sesión con la clave actual.";
     }
 
+    if (detalle.includes("jwt") || detalle.includes("token")) {
+      return "El token de sesión no es válido o venció. Cierre sesión e inicie sesión nuevamente.";
+    }
+
     if (detalle.includes("access denied") || detalle.includes("acceso denegado") || detalle.includes("forbidden")) {
       return "La sesión fue reconocida, pero esta acción necesita un usuario administrador. En el sistema, su persona debe tener tipo A. Si ya lo tiene, cierre sesión y vuelva a entrar.";
     }
 
-    return "El servidor rechazó la solicitud. Revise que la API key sea la de este usuario y que su persona tenga tipo A para acciones administrativas.";
+    return "El servidor rechazó la solicitud. Verifique que inició sesión con el usuario correcto y que su API key corresponde a ese usuario.";
   }
 
   return respuesta?.message || respuesta?.reason || respuesta?.error ||
@@ -101,5 +105,68 @@ export async function solicitarEndpoint(endpoint, { valoresRuta, valoresConsulta
     estado: response.status,
     correcto: response.ok,
     contenido: await leerRespuesta(response),
+  };
+}
+
+export async function subirExcelTrayectos(archivo, sesion) {
+  const formulario = new FormData();
+  formulario.append("archivo", archivo);
+
+  const token = sesion.token.trim();
+  const headers = {
+    Accept: "application/json",
+    Authorization: token.startsWith("Bearer ")
+      ? token
+      : `Bearer ${token}`,
+    "X-API-KEY": sesion.apiKey,
+  };
+
+  const response = await fetch(
+    `${API_BASE_URL}/api/trayectos/cargar-excel`,
+    {
+      method: "POST",
+      headers,
+      body: formulario,
+    },
+  );
+
+  const contenido = await leerRespuesta(response);
+
+  if (!response.ok) {
+    if (response.status === 403) {
+      const detalle = typeof contenido === "string"
+        ? contenido.toLowerCase()
+        : `${contenido?.message || ""} ${contenido?.error || ""}`.toLowerCase();
+
+    if (detalle.includes("cors")) {
+      throw new Error(
+        "El navegador bloqueó la solicitud por CORS. Inicie el front en http://127.0.0.1:5500 y vuelva a cargar la página.",
+      );
+    }
+
+    if (detalle.includes("x-api-key") || detalle.includes("api key") || detalle.includes("apikey")) {
+        throw new Error(
+          "El servidor rechazó la API key. Cierre sesión y vuelva a iniciar con la API key que pertenece a ese mismo usuario.",
+        );
+      }
+
+      if (detalle.includes("jwt") || detalle.includes("token")) {
+        throw new Error(
+          "El token de sesión fue rechazado. Cierre sesión e inicie sesión nuevamente antes de cargar el Excel.",
+        );
+      }
+
+      throw new Error(
+        "El servidor rechazó la autenticación del cargue. Esta operación requiere un token vigente y la API key correspondiente al usuario; no requiere rol administrador.",
+      );
+    }
+
+    throw new Error(mensajeDeError(contenido, response.status));
+  }
+
+  return {
+    estado: response.status,
+    correcto: response.ok,
+    contenido,
   };
 }

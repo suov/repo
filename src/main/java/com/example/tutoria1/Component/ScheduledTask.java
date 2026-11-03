@@ -66,6 +66,7 @@ public class ScheduledTask {
         this.notificationPublisher = notificationPublisher;
     }
 
+    /* Validar fecha de vigencia del conductor */
     @Scheduled (cron = "0 */2 * * * *")
     @Transactional
     public void scheduleTaskWithCronExpression(){
@@ -124,7 +125,7 @@ public class ScheduledTask {
 
         System.out.println("Primera tarea ejecutada");
 
-        /* Tarea 2 */
+        /* Tarea 2 */ /*  */
         List<VehiculoDocumentoModel> vehiculoDocumentos = vehiculoDocumentoRepository.findAll();
 
         if (vehiculoDocumentos == null || vehiculoDocumentos.isEmpty()){

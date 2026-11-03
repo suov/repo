@@ -1824,6 +1824,72 @@ h1 {
   font-size: 13px;
 }
 
+.excel-upload-field {
+  padding: 18px;
+  border: 1px dashed #b9c9e2;
+  border-radius: 12px;
+  background: #f8faff;
+}
+
+.excel-upload-field .field input[type="file"] {
+  width: 100%;
+  min-height: 46px;
+  padding: 8px;
+  border: 1px solid #dfe7f2;
+  border-radius: 9px;
+  color: #53637c;
+  background: #fff;
+  font-size: 12px;
+}
+
+.excel-upload-field .form-help {
+  margin: 9px 0 0;
+  overflow-wrap: anywhere;
+}
+
+.excel-upload-result {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  margin-top: 18px;
+  padding: 17px;
+  border: 1px solid #ccebd9;
+  border-radius: 12px;
+  background: linear-gradient(110deg, #f0fbf5, #fff);
+}
+
+.excel-upload-result-icon {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #16704a;
+  background: #d9f4e5;
+  font-weight: 800;
+}
+
+.excel-upload-result .eyebrow {
+  margin-bottom: 4px;
+  color: #318763;
+}
+
+.excel-upload-result h3 {
+  margin: 0 0 5px;
+  color: #263650;
+  font-family: Manrope, sans-serif;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.excel-upload-result p:last-child {
+  margin: 0;
+  color: #53637c;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 .expiring-documents {
   margin-top: 18px;
 }

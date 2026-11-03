@@ -16,7 +16,7 @@ export const ENDPOINTES_PRIVADOS = [
   {
     id: "rutas-listar",
     grupo: "rutas",
-    titulo: "Listado de rutas",
+    titulo: "Listado de paradas",
     descripcion: "Muestra las paradas y los trayectos registrados.",
     metodo: "GET",
     ruta: "/api/trayectos/ruta",
@@ -67,6 +67,16 @@ export const ENDPOINTES_PRIVADOS = [
       latitud: 4.601,
       longitud: -74.066,
     },
+    acceso: "privado",
+  },
+  {
+    id: "cargues-subir-excel",
+    grupo: "cargues",
+    titulo: "Cargar trayectos desde Excel",
+    descripcion: "Envíe un archivo Excel para cargar y validar los trayectos de sus rutas.",
+    metodo: "POST",
+    ruta: "/api/trayectos/cargar-excel",
+    tipoCuerpo: "multipart",
     acceso: "privado",
   },
   {

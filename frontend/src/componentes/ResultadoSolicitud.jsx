@@ -202,6 +202,7 @@ export default function ResultadoSolicitud({ endpoint, respuesta, alEditar }) {
     && respuesta.contenido.length > 0;
   const esConsultaPorVencer = endpoint.id === "vehiculos-por-vencer";
   const esConsultaCargue = endpoint.id === "cargues-consultar";
+  const esCargaExcel = endpoint.id === "cargues-subir-excel";
 
   const contenido = respuesta.contenido;
   const registros = Array.isArray(contenido)
@@ -251,8 +252,21 @@ export default function ResultadoSolicitud({ endpoint, respuesta, alEditar }) {
       {respuesta.correcto && esConsultaCargue && (
         <ResultadoCargues registros={registros} />
       )}
+      {respuesta.correcto && esCargaExcel && (
+        <div className="excel-upload-result">
+          <span className="excel-upload-result-icon" aria-hidden="true">✓</span>
+          <div>
+            <p className="eyebrow">ARCHIVO RECIBIDO</p>
+            <h3>{respuesta.archivoNombre || "Cargue completado"}</h3>
+            <p>{typeof contenido === "string"
+              ? contenido
+              : contenido?.message || "El servidor recibió la solicitud de cargue."}</p>
+          </div>
+        </div>
+      )}
       {respuesta.correcto && !esConsultaPorVencer && registros.length > 0 && (
         !esConsultaCargue &&
+        !esCargaExcel &&
         <div className="record-grid">
           {registros.map((registro, indice) => (
             <TarjetaResultado

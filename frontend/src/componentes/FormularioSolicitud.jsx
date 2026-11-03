@@ -1,6 +1,10 @@
 
 import { useEffect, useMemo, useState } from "react";
-import { mensajeDeError, solicitarEndpoint } from "../servicios/api.js";
+import {
+  mensajeDeError,
+  solicitarEndpoint,
+  subirExcelTrayectos,
+} from "../servicios/api.js";
 import { ENDPOINTES_PRIVADOS } from "../endpoints/privados.js";
 import { GRUPOS_ADMINISTRATIVOS } from "../endpoints/grupos.js";
 import FormularioDatos from "./FormularioDatos.jsx";
@@ -271,6 +275,7 @@ export default function FormularioSolicitud({
   const [valoresRuta, setValoresRuta] = useState({});
   const [valoresConsulta, setValoresConsulta] = useState({});
   const [valoresCuerpo, setValoresCuerpo] = useState({});
+  const [archivoExcel, setArchivoExcel] = useState(null);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState("");
   const [aviso, setAviso] = useState("");
@@ -313,6 +318,7 @@ export default function FormularioSolicitud({
     }
 
     setValoresCuerpo(cuerpoInicial);
+    setArchivoExcel(null);
     setError("");
     setAviso("");
     alRecibirRespuesta(null);
@@ -715,6 +721,18 @@ export default function FormularioSolicitud({
       return;
     }
 
+    if (endpoint.id === "cargues-subir-excel") {
+      if (!archivoExcel) {
+        setError("Seleccione el archivo Excel que desea cargar.");
+        return;
+      }
+
+      if (!/\.(xlsx|xls)$/i.test(archivoExcel.name)) {
+        setError("El archivo debe tener formato .xlsx o .xls.");
+        return;
+      }
+    }
+
     if (
       endpoint.id === "vehiculo-crear"
       || endpoint.id === "vehiculo-actualizar"
@@ -787,12 +805,14 @@ export default function FormularioSolicitud({
           )
         : valoresCuerpo;
 
-      const respuesta = await solicitarEndpoint(endpoint, {
-        valoresRuta,
-        valoresConsulta,
-        cuerpo: cuerpoSolicitud,
-        sesion,
-      });
+      const respuesta = endpoint.id === "cargues-subir-excel"
+        ? await subirExcelTrayectos(archivoExcel, sesion)
+        : await solicitarEndpoint(endpoint, {
+            valoresRuta,
+            valoresConsulta,
+            cuerpo: cuerpoSolicitud,
+            sesion,
+          });
 
       alRecibirRespuesta(
         endpoint.id === "vehiculos-por-vencer"
@@ -800,7 +820,12 @@ export default function FormularioSolicitud({
               ...respuesta,
               diasConsulta: Number(valoresConsulta.dias),
             }
-          : respuesta,
+          : endpoint.id === "cargues-subir-excel"
+            ? {
+                ...respuesta,
+                archivoNombre: archivoExcel.name,
+              }
+            : respuesta,
       );
 
       if (!respuesta.correcto) {
@@ -868,12 +893,17 @@ export default function FormularioSolicitud({
       setAviso(
         conductorSinRutas
           ? "El conductor existe, pero no tiene rutas asociadas."
-          : respuesta.contenido?.message
-            || (
-              endpoint.metodo === "PUT"
-                ? "Cambios guardados correctamente."
-                : "Solicitud completada correctamente."
-            ),
+          : endpoint.id === "cargues-subir-excel"
+            ? typeof respuesta.contenido === "string"
+              ? respuesta.contenido
+              : respuesta.contenido?.message
+                || "El archivo Excel se envió correctamente."
+            : respuesta.contenido?.message
+              || (
+                endpoint.metodo === "PUT"
+                  ? "Cambios guardados correctamente."
+                  : "Solicitud completada correctamente."
+              ),
       );
 
       if (endpoint.actualizaApiKey) {
@@ -987,6 +1017,29 @@ export default function FormularioSolicitud({
       </div>
 
       <form className="request-form" onSubmit={enviarSolicitud}>
+        {endpoint.id === "cargues-subir-excel" && (
+          <div className="excel-upload-field">
+            <label className="field" htmlFor="cargue-excel">
+              <span>Archivo Excel</span>
+              <input
+                id="cargue-excel"
+                type="file"
+                accept=".xlsx,.xls"
+                disabled={cargando}
+                onChange={(event) => {
+                  setArchivoExcel(event.target.files?.[0] || null);
+                  setError("");
+                  setAviso("");
+                }}
+              />
+            </label>
+            <p className="form-help">
+              Seleccione un archivo .xlsx o .xls con los datos de trayectos.
+              {archivoExcel ? ` Archivo seleccionado: ${archivoExcel.name}` : ""}
+            </p>
+          </div>
+        )}
+
         {endpoint.parametrosRuta?.map((parametro) => (
           <label className="field" key={parametro.nombre}>
             <span>{parametro.etiqueta}</span>
